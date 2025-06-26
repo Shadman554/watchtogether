@@ -83,6 +83,14 @@ The application is configured for Replit deployment with:
   - Direct video file support (.mp4, .webm, .ogg, etc.)
   - Added room code display with copy functionality
   - Enhanced UI with cinema theme and better user experience
+- June 26, 2025: Complete UI redesign with modern interface:
+  - Toggleable UI controls with hide/show functionality
+  - Modern gradient-based design with better visual hierarchy
+  - WebRTC-based voice calling with mute/deafen controls
+  - Enhanced side panel with room statistics and controls
+  - Improved chat system with better toggle functionality
+  - Real-time voice communication between users
+  - Better mobile-responsive design elements
 
 ## User Preferences
 

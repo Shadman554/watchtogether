@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageCircle, Mic, Settings, Folder, Sparkles, Gamepad2, Users, Copy } from "lucide-react";
+import { ArrowLeft, MessageCircle, Mic, MicOff, Settings, Folder, Sparkles, Gamepad2, Users, Copy, Eye, EyeOff, Phone, PhoneOff, Volume2, Monitor } from "lucide-react";
 import UniversalVideoPlayer from "@/components/universal-video-player";
 import ChatPanel from "@/components/chat-panel";
 import SyncStatus from "@/components/sync-status";
+import VoiceCall from "@/components/voice-call";
 import { useWebSocket } from "@/hooks/use-websocket";
 
 interface RoomPageProps {
@@ -17,9 +18,12 @@ interface RoomPageProps {
 export default function Room({ roomCode }: RoomPageProps) {
   const [, setLocation] = useLocation();
   const [showChat, setShowChat] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [isVoiceCallActive, setIsVoiceCallActive] = useState(false);
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState("");
   const [isUrlInputVisible, setIsUrlInputVisible] = useState(false);
+  const [showSidePanel, setShowSidePanel] = useState(false);
   const { toast } = useToast();
 
   const userId = localStorage.getItem("userId") || "";
@@ -67,7 +71,6 @@ export default function Room({ roomCode }: RoomPageProps) {
       return;
     }
 
-    // Accept any URL - YouTube, streaming sites, direct video files
     handleVideoLoad(videoUrl.trim());
     setVideoUrl("");
     setIsUrlInputVisible(false);
@@ -77,6 +80,32 @@ export default function Room({ roomCode }: RoomPageProps) {
     });
   };
 
+  const toggleVoiceCall = () => {
+    setIsVoiceCallActive(!isVoiceCallActive);
+    if (!isVoiceCallActive) {
+      // Start voice call
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          toast({
+            title: "Voice Call Started",
+            description: "You can now talk with your friend!",
+          });
+        })
+        .catch(err => {
+          toast({
+            title: "Microphone Access Denied",
+            description: "Please allow microphone access to use voice chat.",
+            variant: "destructive",
+          });
+        });
+    } else {
+      toast({
+        title: "Voice Call Ended",
+        description: "Voice call has been disconnected.",
+      });
+    }
+  };
+
   // Auto-hide chat initially
   useEffect(() => {
     setShowChat(false);
@@ -84,16 +113,18 @@ export default function Room({ roomCode }: RoomPageProps) {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-cinema-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-cinema-black via-cinema-dark to-accent-purple/10 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-accent-purple border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h3 className="text-xl font-semibold mb-2">Connecting...</h3>
-          <p className="text-gray-400">Establishing connection to room</p>
-          <div className="mt-4 bg-cinema-dark/80 rounded-lg p-4 border border-accent-purple/30">
-            <div className="flex items-center justify-center space-x-2">
+          <h3 className="text-xl font-semibold mb-2">Connecting to CineSync Duo...</h3>
+          <p className="text-gray-400">Establishing secure connection</p>
+          <div className="mt-6 bg-cinema-dark/90 backdrop-blur-sm rounded-xl p-6 border border-accent-purple/30 shadow-xl">
+            <div className="flex items-center justify-center space-x-3 mb-2">
+              <div className="w-3 h-3 bg-accent-purple rounded-full animate-pulse"></div>
               <span className="text-sm text-gray-400">Room Code:</span>
-              <span className="font-bold text-accent-purple text-2xl tracking-wider">{roomCode}</span>
+              <span className="font-bold text-accent-purple text-3xl tracking-wider">{roomCode}</span>
             </div>
+            <p className="text-xs text-gray-500">Share this code with your friend to join</p>
           </div>
         </div>
       </div>
@@ -101,94 +132,141 @@ export default function Room({ roomCode }: RoomPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-cinema-black relative overflow-hidden">
-      {/* Top Bar */}
-      <div className="absolute top-0 left-0 right-0 z-50 bg-cinema-black/95 backdrop-blur-sm border-b border-gray-700 p-4">
-        <div className="flex items-center justify-between">
-          {/* Room Info */}
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBackToLobby}
-              className="text-gray-400 hover:text-white"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 bg-sync-green rounded-full animate-pulse-slow"></div>
-              <div className="bg-cinema-dark/80 rounded-lg p-3 border border-accent-purple/30">
-                <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-sm text-gray-400">Room Code:</span>
-                  <span className="font-bold text-accent-purple text-xl tracking-wider">{roomCode}</span>
+    <div className="min-h-screen bg-gradient-to-br from-cinema-black via-cinema-dark to-accent-purple/10 relative overflow-hidden">
+      {/* Modern Top Control Bar */}
+      {showControls && (
+        <div className="absolute top-4 left-4 right-4 z-50 animate-slide-down">
+          <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                {/* Left Section - Navigation & Room Info */}
+                <div className="flex items-center space-x-4">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(roomCode);
-                      toast({
-                        title: "Room Code Copied",
-                        description: "Share this code with your friend to join!",
-                      });
-                    }}
-                    className="p-1 h-auto text-gray-400 hover:text-accent-purple"
+                    onClick={handleBackToLobby}
+                    className="text-gray-400 hover:text-white hover:bg-cinema-gray/50 rounded-xl"
                   >
-                    <Copy className="w-4 h-4" />
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  
+                  <div className="bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 rounded-xl p-3 border border-accent-purple/30">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-sync-green rounded-full animate-pulse"></div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-400">Room:</span>
+                          <span className="font-bold text-accent-purple text-lg tracking-wider">{roomCode}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText(roomCode);
+                              toast({
+                                title: "Room Code Copied",
+                                description: "Share this code with your friend!",
+                              });
+                            }}
+                            className="p-1 h-auto text-gray-400 hover:text-accent-purple rounded-lg"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <span className="text-xs text-gray-500">Connected Users: {connectedUsers.length}/2</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Center Section - Sync Status */}
+                <SyncStatus syncStatus={syncStatus} />
+
+                {/* Right Section - User Controls */}
+                <div className="flex items-center space-x-2">
+                  {/* Connected Users */}
+                  <div className="flex -space-x-2 mr-3">
+                    {connectedUsers.map((user) => (
+                      <div
+                        key={user.userId}
+                        className={`w-10 h-10 rounded-full border-2 border-cinema-black flex items-center justify-center shadow-lg ${
+                          user.isHost ? 'bg-gradient-to-r from-accent-purple to-accent-blue' : 'bg-gradient-to-r from-accent-blue to-sync-green'
+                        }`}
+                        title={`${user.username} ${user.isHost ? '(Host)' : '(Guest)'}`}
+                      >
+                        <span className="text-sm font-bold text-white">
+                          {user.username.charAt(user.username.length - 1)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Voice Call Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleVoiceCall}
+                    className={`rounded-xl transition-all ${
+                      isVoiceCallActive 
+                        ? 'bg-sync-green/20 text-sync-green hover:bg-sync-green/30' 
+                        : 'bg-cinema-gray/50 text-gray-400 hover:bg-accent-purple/20 hover:text-accent-purple'
+                    }`}
+                  >
+                    {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
+                  </Button>
+
+                  {/* Chat Toggle */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowChat(!showChat)}
+                    className={`rounded-xl transition-all ${
+                      showChat 
+                        ? 'bg-accent-blue/20 text-accent-blue hover:bg-accent-blue/30' 
+                        : 'bg-cinema-gray/50 text-gray-400 hover:bg-accent-blue/20 hover:text-accent-blue'
+                    }`}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+
+                  {/* Settings */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSidePanel(!showSidePanel)}
+                    className="bg-cinema-gray/50 text-gray-400 hover:bg-gray-600/50 hover:text-white rounded-xl"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </Button>
+
+                  {/* UI Toggle */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowControls(!showControls)}
+                    className="bg-cinema-gray/50 text-gray-400 hover:bg-warning-orange/20 hover:text-warning-orange rounded-xl"
+                    title="Hide UI"
+                  >
+                    <EyeOff className="w-4 h-4" />
                   </Button>
                 </div>
-                <span className="text-xs text-gray-400">Share this code with your friend</span>
               </div>
-            </div>
-          </div>
-
-          {/* Sync Status */}
-          <SyncStatus syncStatus={syncStatus} />
-
-          {/* User Avatars */}
-          <div className="flex items-center space-x-2">
-            <div className="flex -space-x-2">
-              {connectedUsers.map((user, index) => (
-                <div
-                  key={user.userId}
-                  className={`w-8 h-8 rounded-full border-2 border-cinema-black flex items-center justify-center ${
-                    user.isHost ? 'bg-accent-purple' : 'bg-accent-blue'
-                  }`}
-                >
-                  <span className="text-xs font-bold">
-                    {user.username.charAt(user.username.length - 1)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-cinema-dark/80 backdrop-blur-sm hover:bg-cinema-gray"
-            >
-              <Mic className="w-4 h-4 text-sync-green" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowChat(!showChat)}
-              className="bg-cinema-dark/80 backdrop-blur-sm hover:bg-cinema-gray"
-            >
-              <MessageCircle className="w-4 h-4 text-accent-blue" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-cinema-dark/80 backdrop-blur-sm hover:bg-cinema-gray"
-            >
-              <Settings className="w-4 h-4 text-gray-400" />
-            </Button>
-          </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      )}
+
+      {/* UI Toggle Button (when controls are hidden) */}
+      {!showControls && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowControls(true)}
+          className="absolute top-4 right-4 z-50 bg-cinema-dark/80 backdrop-blur-sm hover:bg-cinema-gray/80 text-gray-400 hover:text-white rounded-xl animate-slide-down"
+          title="Show UI"
+        >
+          <Eye className="w-5 h-5" />
+        </Button>
+      )}
 
       {/* Video Player */}
       <UniversalVideoPlayer
@@ -207,81 +285,181 @@ export default function Room({ roomCode }: RoomPageProps) {
         currentUserId={userId}
       />
 
-      {/* Side Control Panel */}
-      <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40">
-        <Card className="bg-cinema-dark/90 backdrop-blur-sm border-gray-700 p-3">
-          <div className="space-y-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsUrlInputVisible(!isUrlInputVisible)}
-              className="w-full bg-cinema-gray hover:bg-gray-600 rounded-xl p-3 transition-colors group"
-            >
-              <div className="flex flex-col items-center">
-                <Folder className="w-5 h-5 text-accent-blue group-hover:text-accent-purple transition-colors mb-1" />
-                <span className="text-xs font-medium">Library</span>
-              </div>
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full bg-cinema-gray hover:bg-gray-600 rounded-xl p-3 transition-colors group"
-            >
-              <div className="flex flex-col items-center">
-                <Sparkles className="w-5 h-5 text-warning-orange group-hover:text-accent-purple transition-colors mb-1" />
-                <span className="text-xs font-medium">AI Pick</span>
-              </div>
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full bg-cinema-gray hover:bg-gray-600 rounded-xl p-3 transition-colors group"
-            >
-              <div className="flex flex-col items-center">
-                <Gamepad2 className="w-5 h-5 text-sync-green group-hover:text-accent-purple transition-colors mb-1" />
-                <span className="text-xs font-medium">Games</span>
-              </div>
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full bg-cinema-gray hover:bg-gray-600 rounded-xl p-3 transition-colors group"
-            >
-              <div className="flex flex-col items-center">
-                <Users className="w-5 h-5 text-gray-400 group-hover:text-accent-purple transition-colors mb-1" />
-                <span className="text-xs font-medium">Room</span>
-              </div>
-            </Button>
-          </div>
-        </Card>
-      </div>
+      {/* Modern Side Panel */}
+      {showSidePanel && showControls && (
+        <div className="absolute left-4 top-24 z-40 animate-slide-up">
+          <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl w-64">
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold text-white mb-4 flex items-center">
+                <Monitor className="w-4 h-4 mr-2 text-accent-purple" />
+                Room Controls
+              </h3>
+              
+              <div className="space-y-3">
+                {/* Load Video */}
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsUrlInputVisible(true)}
+                  className="w-full justify-start bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 hover:from-accent-blue/20 hover:to-accent-purple/20 border border-accent-blue/30 rounded-xl p-4 transition-all group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-accent-blue/20 rounded-xl flex items-center justify-center group-hover:bg-accent-blue/30 transition-colors">
+                      <Folder className="w-5 h-5 text-accent-blue" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-white">Load Video</div>
+                      <div className="text-xs text-gray-400">YouTube, streaming sites, direct links</div>
+                    </div>
+                  </div>
+                </Button>
 
-      {/* URL Input Modal */}
-      {isUrlInputVisible && (
-        <div className="absolute inset-0 bg-cinema-black/90 backdrop-blur-sm flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4 bg-cinema-dark border-gray-700">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Load Video from Any Source</h3>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Input
-                    type="text"
-                    placeholder="Enter video URL (YouTube, beenar.net, streaming sites, direct links...)"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    className="bg-cinema-gray border-gray-600 text-white placeholder-gray-500 focus:border-accent-blue"
-                  />
-                  <div className="text-xs text-gray-400">
-                    Supports: YouTube, beenar.net, streamtape, mixdrop, doodstream, upstream, fembed, and direct video files
+                {/* Voice Settings */}
+                <Button
+                  variant="ghost"
+                  onClick={toggleVoiceCall}
+                  className={`w-full justify-start border rounded-xl p-4 transition-all group ${
+                    isVoiceCallActive 
+                      ? 'bg-gradient-to-r from-sync-green/10 to-accent-blue/10 border-sync-green/30' 
+                      : 'bg-gradient-to-r from-gray-600/10 to-gray-500/10 border-gray-600/30'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                      isVoiceCallActive ? 'bg-sync-green/20' : 'bg-gray-600/20'
+                    }`}>
+                      {isVoiceCallActive ? <Mic className="w-5 h-5 text-sync-green" /> : <MicOff className="w-5 h-5 text-gray-400" />}
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-white">
+                        {isVoiceCallActive ? 'Voice Chat Active' : 'Start Voice Chat'}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {isVoiceCallActive ? 'Click to disconnect' : 'Talk with your friend'}
+                      </div>
+                    </div>
+                  </div>
+                </Button>
+
+                {/* AI Recommendations */}
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start bg-gradient-to-r from-warning-orange/10 to-accent-purple/10 hover:from-warning-orange/20 hover:to-accent-purple/20 border border-warning-orange/30 rounded-xl p-4 transition-all group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-warning-orange/20 rounded-xl flex items-center justify-center group-hover:bg-warning-orange/30 transition-colors">
+                      <Sparkles className="w-5 h-5 text-warning-orange" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-white">AI Suggestions</div>
+                      <div className="text-xs text-gray-400">Get movie recommendations</div>
+                    </div>
+                  </div>
+                </Button>
+
+                {/* Interactive Features */}
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start bg-gradient-to-r from-sync-green/10 to-accent-blue/10 hover:from-sync-green/20 hover:to-accent-blue/20 border border-sync-green/30 rounded-xl p-4 transition-all group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-sync-green/20 rounded-xl flex items-center justify-center group-hover:bg-sync-green/30 transition-colors">
+                      <Gamepad2 className="w-5 h-5 text-sync-green" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-white">Interactive Mode</div>
+                      <div className="text-xs text-gray-400">Games & polls during movies</div>
+                    </div>
+                  </div>
+                </Button>
+
+                {/* Room Stats */}
+                <div className="mt-4 p-3 bg-cinema-gray/50 rounded-xl border border-gray-600/30">
+                  <div className="text-xs text-gray-400 mb-2">Room Statistics</div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">Connected:</span>
+                      <span className="text-sync-green">{connectedUsers.length}/2 users</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">Sync Status:</span>
+                      <span className={syncStatus.isSync ? 'text-sync-green' : 'text-red-400'}>
+                        {syncStatus.isSync ? 'Synced' : 'Disconnected'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">Latency:</span>
+                      <span className="text-accent-blue">±{syncStatus.latency}ms</span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex space-x-2">
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Modern URL Input Modal */}
+      {isUrlInputVisible && (
+        <div className="absolute inset-0 bg-cinema-black/95 backdrop-blur-xl flex items-center justify-center z-50 animate-slide-up">
+          <Card className="w-full max-w-lg mx-4 bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
+            <CardContent className="p-8">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-accent-blue to-accent-purple rounded-xl flex items-center justify-center mr-4">
+                  <Folder className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white">Load Video Content</h3>
+                  <p className="text-sm text-gray-400">From any streaming platform or direct link</p>
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <Input
+                    type="text"
+                    placeholder="Paste video URL here..."
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    className="bg-cinema-gray/50 border-gray-600/50 text-white placeholder-gray-500 focus:border-accent-blue focus:bg-cinema-gray/70 rounded-xl h-12 text-lg"
+                    autoFocus
+                  />
+                  
+                  <div className="bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 rounded-xl p-4 border border-accent-blue/20">
+                    <div className="text-sm text-gray-300 mb-2 font-medium">Supported Platforms:</div>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-accent-purple rounded-full"></div>
+                        <span>YouTube</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-accent-blue rounded-full"></div>
+                        <span>beenar.net</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-sync-green rounded-full"></div>
+                        <span>streamtape</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-warning-orange rounded-full"></div>
+                        <span>mixdrop</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-accent-purple rounded-full"></div>
+                        <span>doodstream</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-accent-blue rounded-full"></div>
+                        <span>Direct files (.mp4, .webm)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-3">
                   <Button
                     onClick={handleLoadVideo}
-                    className="flex-1 bg-accent-purple hover:bg-accent-purple/80"
+                    disabled={!videoUrl.trim()}
+                    className="flex-1 bg-gradient-to-r from-accent-purple to-accent-blue hover:from-accent-purple/80 hover:to-accent-blue/80 text-white font-semibold py-3 rounded-xl transition-all"
                   >
                     Load Video
                   </Button>
@@ -291,7 +469,7 @@ export default function Room({ roomCode }: RoomPageProps) {
                       setIsUrlInputVisible(false);
                       setVideoUrl("");
                     }}
-                    className="flex-1 border-gray-600 text-gray-300 hover:bg-cinema-gray"
+                    className="flex-1 border-gray-600/50 text-gray-300 hover:bg-cinema-gray/50 py-3 rounded-xl transition-all"
                   >
                     Cancel
                   </Button>
@@ -301,6 +479,15 @@ export default function Room({ roomCode }: RoomPageProps) {
           </Card>
         </div>
       )}
+
+      {/* Voice Call Component */}
+      <VoiceCall
+        isActive={isVoiceCallActive}
+        onToggle={toggleVoiceCall}
+        roomCode={roomCode}
+        userId={userId}
+        remoteUserId={connectedUsers.find(u => u.userId !== userId)?.userId}
+      />
     </div>
   );
 }
