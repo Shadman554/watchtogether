@@ -392,15 +392,15 @@ export default function Room({ roomCode }: RoomPageProps) {
         </div>
       )}
 
-      {/* Always Visible Access Button */}
+      {/* Always Visible Access Button - Mobile Responsive */}
       <Button
         variant="ghost"
         size="sm"
         onClick={() => setShowControls(!showControls)}
-        className="fixed top-4 right-4 z-[100] bg-purple-600/80 backdrop-blur-sm hover:bg-purple-600 text-white rounded-full w-12 h-12 p-0 shadow-lg border-2 border-white/20"
+        className="fixed top-2 right-2 md:top-4 md:right-4 z-[100] bg-purple-600/80 backdrop-blur-sm hover:bg-purple-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 shadow-lg border-2 border-white/20"
         title={showControls ? "Hide Controls" : "Show Controls"}
       >
-        {showControls ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+        {showControls ? <EyeOff className="w-4 h-4 md:w-5 md:h-5" /> : <Eye className="w-4 h-4 md:w-5 md:h-5" />}
       </Button>
 
       {/* Video Player */}
@@ -420,10 +420,10 @@ export default function Room({ roomCode }: RoomPageProps) {
         currentUserId={userId}
       />
 
-      {/* Modern Side Panel */}
+      {/* Modern Side Panel - Mobile Responsive */}
       {showSidePanel && showControls && (
-        <div className="absolute left-4 top-24 z-40 animate-slide-up">
-          <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl w-64">
+        <div className="absolute left-2 top-20 md:left-4 md:top-24 z-40 animate-slide-up">
+          <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl w-56 md:w-64">
             <CardContent className="p-4">
               <h3 className="text-sm font-semibold text-white mb-4 flex items-center">
                 <Monitor className="w-4 h-4 mr-2 text-accent-purple" />
@@ -615,82 +615,23 @@ export default function Room({ roomCode }: RoomPageProps) {
         </div>
       )}
 
-      {/* Mobile-Responsive Quick Access Toolbar */}
+      {/* Simplified Mobile-Responsive Bottom Toolbar */}
       <div className="fixed bottom-2 left-2 right-2 md:bottom-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 z-[90]">
         <div className="bg-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl rounded-xl md:rounded-2xl p-2 md:p-4">
-          {/* Mobile Layout - Two Rows */}
-          <div className="block md:hidden space-y-2">
-            {/* Top Row - Primary Actions */}
-            <div className="flex items-center justify-center space-x-2">
+          {/* Mobile Layout - Single Row for Load Video Only */}
+          <div className="block md:hidden">
+            <div className="flex items-center justify-center">
               <Button
                 onClick={() => setIsUrlInputVisible(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg shadow-lg text-sm"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg text-sm w-full max-w-xs"
               >
-                <Folder className="w-4 h-4 mr-1" />
+                <Folder className="w-4 h-4 mr-2" />
                 Load Video
               </Button>
-
-              <Button
-                variant="ghost"
-                onClick={() => setShowChat(!showChat)}
-                className={`rounded-lg px-3 py-2 ${
-                  showChat 
-                    ? 'bg-blue-600/20 text-blue-400 border border-blue-400/30' 
-                    : 'bg-gray-700/50 text-gray-300'
-                }`}
-              >
-                <MessageCircle className="w-4 h-4" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                onClick={toggleVoiceCall}
-                className={`rounded-lg px-3 py-2 ${
-                  isVoiceCallActive 
-                    ? 'bg-green-600/20 text-green-400 border border-green-400/30' 
-                    : 'bg-gray-700/50 text-gray-300'
-                }`}
-              >
-                {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
-              </Button>
-
-              <Button
-                variant="ghost"
-                onClick={() => setShowSidePanel(!showSidePanel)}
-                className={`rounded-lg px-3 py-2 ${
-                  showSidePanel 
-                    ? 'bg-orange-600/20 text-orange-400 border border-orange-400/30' 
-                    : 'bg-gray-700/50 text-gray-300'
-                }`}
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
-            </div>
-
-            {/* Bottom Row - Room Code */}
-            <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg px-3 py-2 border border-purple-400/30">
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-xs text-gray-400">Room:</span>
-                <span className="font-bold text-purple-400 text-sm tracking-wider">{roomCode}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(roomCode);
-                    toast({
-                      title: "Room Code Copied",
-                      description: "Share this code with your friend!",
-                    });
-                  }}
-                  className="p-1 h-auto text-gray-400 hover:text-purple-400 rounded-lg"
-                >
-                  <Copy className="w-3 h-3" />
-                </Button>
-              </div>
             </div>
           </div>
 
-          {/* Desktop Layout - Single Row */}
+          {/* Desktop Layout - Full Controls */}
           <div className="hidden md:flex items-center space-x-3">
             {/* Load Video Button */}
             <Button
