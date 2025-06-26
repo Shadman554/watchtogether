@@ -156,16 +156,7 @@ export default function Room({ roomCode }: RoomPageProps) {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900/20 relative overflow-hidden">
       
 
-      {/* Always Visible Access Button - Mobile Responsive */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setShowControls(!showControls)}
-        className="fixed top-2 right-2 md:top-4 md:right-4 z-[100] bg-purple-600/80 backdrop-blur-sm hover:bg-purple-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 shadow-lg border-2 border-white/20"
-        title={showControls ? "Hide Controls" : "Show Controls"}
-      >
-        {showControls ? <EyeOff className="w-4 h-4 md:w-5 md:h-5" /> : <Eye className="w-4 h-4 md:w-5 md:h-5" />}
-      </Button>
+      
 
       {/* Video Player */}
       <UniversalVideoPlayer
