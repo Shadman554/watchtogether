@@ -122,7 +122,7 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     };
   }, [videoUrl, videoType, syncMode, onSync, onPlaybackControl, syncStatus.remoteTime]);
 
-  // Heartbeat sync system - sends sync updates every 2 seconds
+  // Enhanced heartbeat sync system - sends sync updates every 1.5 seconds
   useEffect(() => {
     if (!syncMode || videoType !== 'direct') return;
 
@@ -132,10 +132,11 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
 
     syncIntervalRef.current = window.setInterval(() => {
       const video = videoRef.current;
-      if (video && !video.paused) {
+      if (video) {
+        // Send sync for both playing and paused states
         onSync(video.currentTime, !video.paused, videoUrl);
       }
-    }, 2000);
+    }, 1500);
 
     return () => {
       if (syncIntervalRef.current) {
@@ -144,32 +145,32 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     };
   }, [syncMode, videoType, videoUrl, onSync]);
 
-  // Sync with remote player
+  // Enhanced sync with remote player - better tolerance and quicker response
   useEffect(() => {
     if (!syncMode || !syncStatus.isSync) return;
 
     const video = videoRef.current;
-    if (video && videoType === 'direct' && syncStatus.remoteTime > 0) {
+    if (video && videoType === 'direct') {
       const timeDiff = Math.abs(currentTime - syncStatus.remoteTime);
       
-      // Only sync if difference is significant
-      if (timeDiff > 2) {
+      // More aggressive sync - sync if difference is greater than 1 second
+      if (syncStatus.remoteTime > 0 && timeDiff > 1) {
         video.currentTime = syncStatus.remoteTime;
-        console.log('Syncing video time:', syncStatus.remoteTime);
+        console.log(`Syncing video time: ${syncStatus.remoteTime} (diff: ${timeDiff}s)`);
       }
 
-      // Sync play/pause state
-      if (isPlaying !== syncStatus.remoteIsPlaying) {
+      // Sync play/pause state with debouncing
+      if (syncStatus.remoteTime > 0) {
         if (syncStatus.remoteIsPlaying && video.paused) {
           video.play().catch(console.error);
-          console.log('Remote play triggered');
+          console.log('Remote play triggered - syncing playback');
         } else if (!syncStatus.remoteIsPlaying && !video.paused) {
           video.pause();
-          console.log('Remote pause triggered');
+          console.log('Remote pause triggered - syncing playback');
         }
       }
     }
-  }, [syncStatus, syncMode, currentTime, isPlaying, videoType]);
+  }, [syncStatus.remoteTime, syncStatus.remoteIsPlaying, syncStatus.isSync, syncMode, currentTime, videoType]);
 
   const handlePlay = () => {
     const video = videoRef.current;

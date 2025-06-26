@@ -61,42 +61,42 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
   };
 
   return (
-    <div className={`absolute top-0 right-0 w-80 h-full bg-cinema-dark/95 backdrop-blur-sm border-l border-gray-700 transform transition-transform duration-300 z-40 ${
+    <div className={`absolute top-0 right-0 w-full md:w-80 h-full bg-cinema-dark/95 backdrop-blur-sm border-l border-gray-700 transform transition-transform duration-300 z-40 ${
       isVisible ? 'translate-x-0' : 'translate-x-full'
     }`}>
       <Card className="h-full bg-transparent border-0">
-        {/* Chat Header */}
-        <CardHeader className="p-4 border-b border-gray-700">
+        {/* Mobile-Responsive Chat Header */}
+        <CardHeader className="p-3 md:p-4 border-b border-gray-700">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-white">Chat & Voice</h3>
+            <h3 className="font-semibold text-white text-sm md:text-base">Chat & Voice</h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white p-1 md:p-2"
             >
               <X className="w-4 h-4" />
             </Button>
           </div>
-          {/* Voice Status */}
-          <div className="flex items-center space-x-2 mt-3">
-            <div className="flex items-center space-x-2 bg-sync-green/20 rounded-full px-3 py-1">
-              <div className="w-2 h-2 bg-sync-green rounded-full animate-pulse" />
+          {/* Voice Status - Mobile Responsive */}
+          <div className="flex items-center space-x-1 md:space-x-2 mt-2 md:mt-3">
+            <div className="flex items-center space-x-1 md:space-x-2 bg-sync-green/20 rounded-full px-2 md:px-3 py-1">
+              <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-sync-green rounded-full animate-pulse" />
               <span className="text-xs text-white">Voice Connected</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs text-gray-400 hover:text-white p-1 h-auto"
+              className="text-xs text-gray-400 hover:text-white p-1 h-auto hidden md:block"
             >
               Whisper Mode
             </Button>
           </div>
         </CardHeader>
 
-        {/* Messages Container */}
-        <CardContent className="flex-1 p-4 h-full pb-0">
-          <ScrollArea className={`pr-4 chat-messages ${isVisible ? 'h-[calc(100vh-200px)]' : 'h-0'}`}>
+        {/* Messages Container - Mobile Responsive */}
+        <CardContent className="flex-1 p-2 md:p-4 h-full pb-0">
+          <ScrollArea className={`pr-2 md:pr-4 chat-messages ${isVisible ? 'h-[calc(100vh-160px)] md:h-[calc(100vh-200px)]' : 'h-0'}`}>
             <div className="space-y-4">
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 mt-8">
@@ -162,39 +162,39 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
             </div>
           </ScrollArea>
 
-          {/* Chat Input */}
-          <div className="pt-4 border-t border-gray-700 mt-4">
-            {/* Quick Reactions */}
-            <div className="flex justify-center space-x-2 mb-3">
+          {/* Mobile-Responsive Chat Input */}
+          <div className="pt-2 md:pt-4 border-t border-gray-700 mt-2 md:mt-4">
+            {/* Quick Reactions - Mobile Responsive */}
+            <div className="flex justify-center space-x-1 md:space-x-2 mb-2 md:mb-3">
               {EMOJI_REACTIONS.map((emoji) => (
                 <Button
                   key={emoji}
                   variant="ghost"
                   size="sm"
                   onClick={() => handleEmojiReaction(emoji)}
-                  className="text-xl hover:scale-110 transition-transform p-2 h-auto"
+                  className="text-base md:text-xl hover:scale-110 transition-transform p-1 md:p-2 h-auto"
                 >
                   {emoji}
                 </Button>
               ))}
             </div>
 
-            {/* Text Input */}
-            <div className="flex space-x-2">
+            {/* Text Input - Mobile Responsive */}
+            <div className="flex space-x-1 md:space-x-2">
               <Input
                 type="text"
                 placeholder="Type a message..."
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 bg-cinema-gray border-gray-600 text-white placeholder-gray-500 focus:border-accent-blue text-sm"
+                className="flex-1 bg-cinema-gray border-gray-600 text-white placeholder-gray-500 focus:border-accent-blue text-sm h-8 md:h-10"
               />
               <Button
                 onClick={handleSendMessage}
                 disabled={!messageInput.trim()}
-                className="bg-accent-purple hover:bg-accent-purple/80 px-4"
+                className="bg-accent-purple hover:bg-accent-purple/80 px-2 md:px-4 h-8 md:h-10"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3 h-3 md:w-4 md:h-4" />
               </Button>
             </div>
           </div>

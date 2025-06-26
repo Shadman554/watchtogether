@@ -134,11 +134,129 @@ export default function Room({ roomCode }: RoomPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900/20 relative overflow-hidden">
-      {/* Simplified Top Control Bar */}
+      {/* Mobile-Responsive Top Control Bar */}
       {showControls && (
-        <div className="absolute top-4 left-4 right-4 z-50">
-          <div className="bg-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl rounded-2xl p-4">
-            <div className="flex items-center justify-between">
+        <div className="absolute top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 z-50">
+          <div className="bg-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl rounded-xl md:rounded-2xl p-2 md:p-4">
+            {/* Mobile Layout - Stacked */}
+            <div className="block md:hidden space-y-2">
+              {/* Top Row - Navigation & Room Code */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleBackToLobby}
+                    className="text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg p-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                  
+                  <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg px-2 py-1 border border-purple-400/30">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-xs text-gray-400">Room:</span>
+                      <span className="font-bold text-purple-400 text-sm tracking-wider">{roomCode}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(roomCode);
+                          toast({
+                            title: "Room Code Copied",
+                            description: "Share this code with your friend!",
+                          });
+                        }}
+                        className="p-1 h-auto text-gray-400 hover:text-purple-400 rounded"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowControls(!showControls)}
+                  className="bg-gray-700/50 text-gray-400 hover:bg-orange-600/20 hover:text-orange-400 rounded-lg p-2"
+                  title="Hide UI"
+                >
+                  <EyeOff className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Bottom Row - Controls and Status */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1">
+                  {/* Connected Users */}
+                  <div className="flex -space-x-1 mr-2">
+                    {connectedUsers.map((user) => (
+                      <div
+                        key={user.userId}
+                        className={`w-6 h-6 rounded-full border border-black flex items-center justify-center shadow-lg ${
+                          user.isHost ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-green-600'
+                        }`}
+                        title={`${user.username} ${user.isHost ? '(Host)' : '(Guest)'}`}
+                      >
+                        <span className="text-xs font-bold text-white">
+                          {user.username.charAt(0)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Control Buttons */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleVoiceCall}
+                    className={`rounded-lg p-1.5 ${
+                      isVoiceCallActive 
+                        ? 'bg-green-600/20 text-green-400' 
+                        : 'bg-gray-700/50 text-gray-400'
+                    }`}
+                  >
+                    {isVoiceCallActive ? <Phone className="w-3 h-3" /> : <PhoneOff className="w-3 h-3" />}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowChat(!showChat)}
+                    className={`rounded-lg p-1.5 ${
+                      showChat 
+                        ? 'bg-blue-600/20 text-blue-400' 
+                        : 'bg-gray-700/50 text-gray-400'
+                    }`}
+                  >
+                    <MessageCircle className="w-3 h-3" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSidePanel(!showSidePanel)}
+                    className="bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-white rounded-lg p-1.5"
+                  >
+                    <Settings className="w-3 h-3" />
+                  </Button>
+                </div>
+
+                {/* Mobile Sync Status */}
+                <div className="flex items-center space-x-1">
+                  <div className={`w-2 h-2 rounded-full ${
+                    syncStatus.isSync ? 'bg-sync-green animate-pulse' : 'bg-warning-orange'
+                  }`}></div>
+                  <span className="text-xs text-gray-400">
+                    {syncStatus.isSync ? 'Synced' : 'Out of Sync'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Layout - Original */}
+            <div className="hidden md:flex items-center justify-between">
               {/* Left Section - Navigation & Room Info */}
               <div className="flex items-center space-x-4">
                 <Button
@@ -395,35 +513,35 @@ export default function Room({ roomCode }: RoomPageProps) {
         </div>
       )}
 
-      {/* Modern URL Input Modal */}
+      {/* Mobile-Responsive URL Input Modal */}
       {isUrlInputVisible && (
-        <div className="absolute inset-0 bg-cinema-black/95 backdrop-blur-xl flex items-center justify-center z-50 animate-slide-up">
-          <Card className="w-full max-w-lg mx-4 bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
-            <CardContent className="p-8">
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-accent-blue to-accent-purple rounded-xl flex items-center justify-center mr-4">
-                  <Folder className="w-6 h-6 text-white" />
+        <div className="absolute inset-0 bg-cinema-black/95 backdrop-blur-xl flex items-center justify-center z-50 animate-slide-up p-2 md:p-0">
+          <Card className="w-full max-w-lg mx-2 md:mx-4 bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
+            <CardContent className="p-4 md:p-8">
+              <div className="flex items-center mb-4 md:mb-6">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-accent-blue to-accent-purple rounded-xl flex items-center justify-center mr-3 md:mr-4">
+                  <Folder className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Load Video Content</h3>
-                  <p className="text-sm text-gray-400">From any streaming platform or direct link</p>
+                  <h3 className="text-lg md:text-xl font-semibold text-white">Load Video Content</h3>
+                  <p className="text-xs md:text-sm text-gray-400">From any streaming platform or direct link</p>
                 </div>
               </div>
               
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div className="space-y-3">
                   <Input
                     type="text"
                     placeholder="Paste video URL here..."
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
-                    className="bg-cinema-gray/50 border-gray-600/50 text-white placeholder-gray-500 focus:border-accent-blue focus:bg-cinema-gray/70 rounded-xl h-12 text-lg"
+                    className="bg-cinema-gray/50 border-gray-600/50 text-white placeholder-gray-500 focus:border-accent-blue focus:bg-cinema-gray/70 rounded-xl h-10 md:h-12 text-base md:text-lg"
                     autoFocus
                   />
                   
-                  <div className="bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 rounded-xl p-4 border border-accent-blue/20">
-                    <div className="text-sm text-gray-300 mb-2 font-medium">Supported Platforms:</div>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
+                  <div className="bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 rounded-xl p-3 md:p-4 border border-accent-blue/20">
+                    <div className="text-xs md:text-sm text-gray-300 mb-2 font-medium">Supported Platforms:</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-2 text-xs text-gray-400">
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-accent-purple rounded-full"></div>
                         <span>YouTube</span>
@@ -452,7 +570,7 @@ export default function Room({ roomCode }: RoomPageProps) {
                   </div>
                 </div>
                 
-                <div className="flex space-x-3">
+                <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3">
                   <Button
                     onClick={handleLoadVideo}
                     disabled={!videoUrl.trim()}
@@ -477,10 +595,83 @@ export default function Room({ roomCode }: RoomPageProps) {
         </div>
       )}
 
-      {/* Quick Access Toolbar - Always Visible */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[90]">
-        <div className="bg-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl rounded-2xl p-4">
-          <div className="flex items-center space-x-3">
+      {/* Mobile-Responsive Quick Access Toolbar */}
+      <div className="fixed bottom-2 left-2 right-2 md:bottom-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 z-[90]">
+        <div className="bg-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl rounded-xl md:rounded-2xl p-2 md:p-4">
+          {/* Mobile Layout - Two Rows */}
+          <div className="block md:hidden space-y-2">
+            {/* Top Row - Primary Actions */}
+            <div className="flex items-center justify-center space-x-2">
+              <Button
+                onClick={() => setIsUrlInputVisible(true)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg shadow-lg text-sm"
+              >
+                <Folder className="w-4 h-4 mr-1" />
+                Load Video
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() => setShowChat(!showChat)}
+                className={`rounded-lg px-3 py-2 ${
+                  showChat 
+                    ? 'bg-blue-600/20 text-blue-400 border border-blue-400/30' 
+                    : 'bg-gray-700/50 text-gray-300'
+                }`}
+              >
+                <MessageCircle className="w-4 h-4" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={toggleVoiceCall}
+                className={`rounded-lg px-3 py-2 ${
+                  isVoiceCallActive 
+                    ? 'bg-green-600/20 text-green-400 border border-green-400/30' 
+                    : 'bg-gray-700/50 text-gray-300'
+                }`}
+              >
+                {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() => setShowSidePanel(!showSidePanel)}
+                className={`rounded-lg px-3 py-2 ${
+                  showSidePanel 
+                    ? 'bg-orange-600/20 text-orange-400 border border-orange-400/30' 
+                    : 'bg-gray-700/50 text-gray-300'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Bottom Row - Room Code */}
+            <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg px-3 py-2 border border-purple-400/30">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-xs text-gray-400">Room:</span>
+                <span className="font-bold text-purple-400 text-sm tracking-wider">{roomCode}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(roomCode);
+                    toast({
+                      title: "Room Code Copied",
+                      description: "Share this code with your friend!",
+                    });
+                  }}
+                  className="p-1 h-auto text-gray-400 hover:text-purple-400 rounded-lg"
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout - Single Row */}
+          <div className="hidden md:flex items-center space-x-3">
             {/* Load Video Button */}
             <Button
               onClick={() => setIsUrlInputVisible(true)}

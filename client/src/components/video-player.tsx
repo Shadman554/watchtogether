@@ -51,23 +51,29 @@ export default function VideoPlayer({ videoId, onSync, onPlaybackControl, syncSt
     onDurationChange: setDuration,
   });
 
-  // Sync with remote player
+  // Enhanced sync with remote player - improved tolerance and responsiveness
   useEffect(() => {
-    if (!player || !syncMode) return;
+    if (!player || !syncMode || !syncStatus.isSync) return;
 
     const timeDiff = Math.abs(currentTime - syncStatus.remoteTime);
-    if (timeDiff > 1) {
-      player.seekTo(syncStatus.remoteTime);
+    
+    // Sync time with better tolerance (0.5 seconds for YouTube)
+    if (syncStatus.remoteTime > 0 && timeDiff > 0.5) {
+      player.seekTo(syncStatus.remoteTime, true);
+      console.log(`YouTube sync: seeking to ${syncStatus.remoteTime} (diff: ${timeDiff}s)`);
     }
 
-    if (isPlaying !== syncStatus.remoteIsPlaying) {
-      if (syncStatus.remoteIsPlaying) {
+    // Sync play/pause state more reliably
+    if (syncStatus.remoteTime > 0) {
+      if (syncStatus.remoteIsPlaying && !isPlaying) {
         player.playVideo();
-      } else {
+        console.log('YouTube sync: playing video');
+      } else if (!syncStatus.remoteIsPlaying && isPlaying) {
         player.pauseVideo();
+        console.log('YouTube sync: pausing video');
       }
     }
-  }, [syncStatus, player, syncMode]);
+  }, [syncStatus.remoteTime, syncStatus.remoteIsPlaying, syncStatus.isSync, player, syncMode, currentTime, isPlaying]);
 
   // Control visibility
   const showControlsTemporarily = () => {

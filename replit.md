@@ -91,6 +91,14 @@ The application is configured for Replit deployment with:
   - Improved chat system with better toggle functionality
   - Real-time voice communication between users
   - Better mobile-responsive design elements
+- June 26, 2025: Mobile responsiveness and synchronization improvements:
+  - Fully responsive design for mobile phones and tablets
+  - Mobile-optimized control panels with stacked layouts
+  - Enhanced video synchronization with improved tolerance (1s for direct video, 0.5s for YouTube)
+  - Better sync timing with 1.5-second heartbeat intervals
+  - Mobile-responsive chat panel with optimized sizing
+  - Improved WebSocket communication for better real-time sync
+  - Enhanced playback control synchronization between host and guest
 
 ## User Preferences
 
