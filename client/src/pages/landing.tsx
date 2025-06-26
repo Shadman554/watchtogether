@@ -70,47 +70,47 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 py-8 md:py-4 overflow-y-auto md:flex md:items-center md:justify-center">
-      <div className="max-w-6xl w-full animate-fade-up">
-        {/* Hero Section */}
-        <div className="text-center mb-12 md:mb-16">
-          <div className="flex items-center justify-center mb-6 md:mb-8 animate-float">
-            <div className="relative">
-              <Film className="text-4xl md:text-6xl text-purple-400 mr-3 md:mr-6 animate-glow" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 pb-8 overflow-y-auto">
+      <div className="max-w-6xl w-full mx-auto animate-fade-up min-h-screen flex flex-col justify-center">
+        {/* Mobile-First Hero Section */}
+        <div className="text-center mb-8 md:mb-16">
+          <div className="flex flex-col items-center mb-6 md:mb-8 animate-float">
+            <div className="relative mb-4">
+              <Film className="text-5xl md:text-6xl text-purple-400 animate-glow" />
               <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
             </div>
             <div>
-              <h1 className="text-4xl md:text-7xl font-black bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent mb-2">
+              <h1 className="text-3xl md:text-7xl font-black bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent mb-2">
                 CineSync Duo
               </h1>
-              <div className="h-1 w-32 md:w-48 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto"></div>
+              <div className="h-1 w-24 md:w-48 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto"></div>
             </div>
           </div>
-          <p className="text-xl md:text-2xl text-gray-300 px-4 mb-4">Watch movies together in perfect sync, anywhere in the world</p>
-          <p className="text-sm md:text-base text-gray-400 px-4">Experience seamless video synchronization with voice chat and universal platform support</p>
+          <p className="text-lg md:text-2xl text-gray-300 px-4 mb-3">Watch movies together in perfect sync</p>
+          <p className="text-sm md:text-base text-gray-400 px-4">Voice chat and universal platform support</p>
         </div>
 
-        {/* Main Action Cards */}
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-12 md:mb-16">
+        {/* Mobile-Optimized Action Cards */}
+        <div className="space-y-6 md:grid md:grid-cols-2 md:gap-8 md:space-y-0 mb-8 md:mb-16">
           {/* Create Room Card */}
           <Card className="group glass-dark border-purple-500/20 hover:border-purple-400/40 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20 animate-scale-in">
-            <CardContent className="p-8 md:p-10">
-              <div className="flex items-center mb-6">
+            <CardContent className="p-6 md:p-10">
+              <div className="flex items-center mb-4 md:mb-6">
                 <div className="relative">
-                  <Plus className="text-3xl text-green-400 mr-4 group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping"></div>
+                  <Plus className="text-2xl md:text-3xl text-green-400 mr-3 md:mr-4 group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-green-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping"></div>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-green-400 bg-clip-text text-transparent">Create Room</h3>
+                <h3 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-white to-green-400 bg-clip-text text-transparent">Create Room</h3>
               </div>
-              <p className="text-gray-300 mb-8 text-lg leading-relaxed">Start a new sync session and invite your friend to watch together with crystal-clear synchronization</p>
+              <p className="text-gray-300 mb-6 md:mb-8 text-sm md:text-lg leading-relaxed">Start a new sync session and invite your friend to watch together</p>
               <Button 
                 onClick={handleCreateRoom}
                 disabled={isCreating}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl group-hover:animate-glow"
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm md:text-base"
               >
                 {isCreating ? (
                   <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-b-2 border-white mr-2"></div>
                     Creating...
                   </div>
                 ) : (
@@ -122,32 +122,32 @@ export default function Landing() {
 
           {/* Join Room Card */}
           <Card className="group glass-dark border-blue-500/20 hover:border-blue-400/40 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20 animate-scale-in [animation-delay:0.2s]">
-            <CardContent className="p-8 md:p-10">
-              <div className="flex items-center mb-6">
+            <CardContent className="p-6 md:p-10">
+              <div className="flex items-center mb-4 md:mb-6">
                 <div className="relative">
-                  <LogIn className="text-3xl text-blue-400 mr-4 group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping"></div>
+                  <LogIn className="text-2xl md:text-3xl text-blue-400 mr-3 md:mr-4 group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping"></div>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-blue-400 bg-clip-text text-transparent">Join Room</h3>
+                <h3 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-white to-blue-400 bg-clip-text text-transparent">Join Room</h3>
               </div>
-              <p className="text-gray-300 mb-8 text-lg leading-relaxed">Enter a room code to join an existing sync session and start watching instantly</p>
-              <div className="space-y-4">
+              <p className="text-gray-300 mb-6 md:mb-8 text-sm md:text-lg leading-relaxed">Enter a room code to join an existing sync session</p>
+              <div className="space-y-3 md:space-y-4">
                 <Input
                   type="text"
-                  placeholder="Enter 6-digit room code..."
+                  placeholder="Enter room code..."
                   value={roomCode}
                   onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                  className="w-full bg-slate-800/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 py-4 px-6 rounded-xl text-lg font-mono tracking-wider transition-all duration-300"
+                  className="w-full bg-slate-800/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 py-3 md:py-4 px-4 md:px-6 rounded-lg md:rounded-xl text-base md:text-lg font-mono tracking-wider transition-all duration-300"
                   maxLength={6}
                 />
                 <Button 
                   onClick={handleJoinRoom}
                   disabled={isJoining}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl group-hover:animate-glow"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm md:text-base"
                 >
                   {isJoining ? (
                     <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-b-2 border-white mr-2"></div>
                       Joining...
                     </div>
                   ) : (

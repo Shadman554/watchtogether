@@ -61,46 +61,48 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
   };
 
   return (
-    <div className={`fixed top-0 right-0 w-full md:w-80 h-full bg-cinema-dark/95 backdrop-blur-sm border-l border-gray-700 transform transition-transform duration-300 z-50 ${
+    <div className={`fixed top-0 right-0 w-full md:w-80 h-full glass-dark border-l border-purple-500/20 transform transition-transform duration-500 z-50 ${
       isVisible ? 'translate-x-0' : 'translate-x-full'
     }`}>
-      <Card className="h-full bg-transparent border-0">
-        {/* Mobile-Responsive Chat Header */}
-        <CardHeader className="p-3 md:p-4 border-b border-gray-700">
+      <Card className="h-full bg-transparent border-0 flex flex-col">
+        {/* Premium Mobile Chat Header */}
+        <CardHeader className="p-4 border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-white text-sm md:text-base">Chat & Voice</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-gray-400 hover:text-white p-1 md:p-2"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-          {/* Voice Status - Mobile Responsive */}
-          <div className="flex items-center space-x-1 md:space-x-2 mt-2 md:mt-3">
-            <div className="flex items-center space-x-1 md:space-x-2 bg-sync-green/20 rounded-full px-2 md:px-3 py-1">
-              <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-sync-green rounded-full animate-pulse" />
-              <span className="text-xs text-white">Voice Connected</span>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Live Chat</h3>
+                <p className="text-xs text-gray-400">Real-time messaging</p>
+              </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs text-gray-400 hover:text-white p-1 h-auto hidden md:block"
+              onClick={onClose}
+              className="text-gray-400 hover:text-white hover:bg-purple-500/20 rounded-lg p-2"
             >
-              Whisper Mode
+              <X className="w-4 h-4" />
             </Button>
           </div>
         </CardHeader>
 
         {/* Messages Container - Mobile Responsive */}
-        <CardContent className="flex-1 p-2 md:p-4 pb-0 flex flex-col h-[calc(100vh-120px)] md:h-[calc(100vh-160px)]">
-          <ScrollArea className={`pr-2 md:pr-4 chat-messages flex-1 ${isVisible ? 'mb-4' : 'h-0'}`}>
+        <CardContent className="flex-1 p-4 flex flex-col overflow-hidden">
+          <ScrollArea className="flex-1 pr-4 mb-4">
             <div className="space-y-4">
               {messages.length === 0 ? (
-                <div className="text-center text-gray-500 mt-8">
-                  <p className="text-sm">No messages yet. Start the conversation!</p>
+                <div className="text-center text-gray-400 mt-12 animate-fade-up">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
+                    <svg className="w-8 h-8 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold text-white mb-2">Ready to Chat</h4>
+                  <p className="text-sm leading-relaxed">Start your conversation and enjoy<br />real-time messaging while watching!</p>
                 </div>
               ) : (
                 messages.map((message, index) => {
@@ -111,7 +113,7 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
                   if (isSystem) {
                     return (
                       <div key={message.id || index} className="text-center">
-                        <span className="text-xs text-gray-500 bg-cinema-gray rounded-full px-3 py-1">
+                        <span className="text-xs text-gray-500 bg-slate-800/50 rounded-full px-3 py-1 border border-slate-700/50">
                           {message.content}
                         </span>
                       </div>
@@ -121,39 +123,34 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
                   if (isEmoji) {
                     return (
                       <div key={message.id || index} className="text-center">
-                        <span className="text-2xl">{message.content}</span>
+                        <span className="text-3xl animate-scale-in">{message.content}</span>
                       </div>
                     );
                   }
 
                   return (
-                    <div key={message.id || index} className={`flex space-x-3 ${isOwn ? 'justify-end' : ''}`}>
-                      {!isOwn && (
-                        <div className="w-8 h-8 bg-accent-blue rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-white">
-                            {message.username.charAt(message.username.length - 1)}
-                          </span>
-                        </div>
-                      )}
-                      <div className={`flex-1 ${isOwn ? 'text-right' : ''}`}>
-                        <div className={`inline-block rounded-2xl px-4 py-2 ${
-                          isOwn 
-                            ? 'bg-accent-purple text-white' 
-                            : 'bg-cinema-gray text-white'
+                    <div key={message.id || index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} animate-fade-up`} style={{ animationDelay: `${index * 0.1}s` }}>
+                      <div className={`max-w-[80%] group ${isOwn ? 'order-2' : 'order-1'}`}>
+                        <div className={`p-3 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 ${
+                          isOwn
+                            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white ml-2'
+                            : 'bg-slate-800/80 text-gray-100 mr-2 border border-slate-700/50'
                         }`}>
-                          <p className="text-sm">{message.content}</p>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {formatMessageTime(message)}
+                          <div className="flex items-center justify-between mb-1">
+                            <span className={`text-xs font-medium ${
+                              isOwn ? 'text-purple-100' : 'text-purple-400'
+                            }`}>
+                              {message.username}
+                            </span>
+                            <span className={`text-xs ${
+                              isOwn ? 'text-purple-200' : 'text-gray-500'
+                            }`}>
+                              {formatMessageTime(message)}
+                            </span>
+                          </div>
+                          <p className="text-sm leading-relaxed break-words">{message.content}</p>
                         </div>
                       </div>
-                      {isOwn && (
-                        <div className="w-8 h-8 bg-accent-purple rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-white">
-                            {message.username.charAt(message.username.length - 1)}
-                          </span>
-                        </div>
-                      )}
                     </div>
                   );
                 })
@@ -162,39 +159,39 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
             </div>
           </ScrollArea>
 
-          {/* Mobile-Responsive Chat Input - Always at bottom */}
-          <div className="pt-2 md:pt-4 border-t border-gray-700 mt-auto bg-cinema-dark/95 backdrop-blur-sm">
-            {/* Quick Reactions - Mobile Responsive */}
-            <div className="flex justify-center space-x-1 md:space-x-2 mb-2 md:mb-3">
+          {/* Premium Chat Input - Fixed at bottom */}
+          <div className="flex-shrink-0 pt-4 border-t border-purple-500/20 bg-gradient-to-r from-purple-500/5 to-blue-500/5">
+            {/* Quick Reactions */}
+            <div className="flex justify-center space-x-2 mb-3">
               {EMOJI_REACTIONS.map((emoji) => (
                 <Button
                   key={emoji}
                   variant="ghost"
                   size="sm"
                   onClick={() => handleEmojiReaction(emoji)}
-                  className="text-base md:text-xl hover:scale-110 transition-transform p-1 md:p-2 h-auto"
+                  className="text-lg hover:scale-110 transition-all duration-300 p-2 h-auto hover:bg-purple-500/20 rounded-lg"
                 >
                   {emoji}
                 </Button>
               ))}
             </div>
 
-            {/* Text Input - Mobile Responsive */}
-            <div className="flex space-x-1 md:space-x-2">
+            {/* Enhanced Text Input */}
+            <div className="flex space-x-2">
               <Input
                 type="text"
                 placeholder="Type a message..."
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 bg-cinema-gray border-gray-600 text-white placeholder-gray-500 focus:border-accent-blue text-sm h-8 md:h-10"
+                className="flex-1 bg-slate-800/50 border-slate-600 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 py-3 px-4 rounded-xl transition-all duration-300"
               />
               <Button
                 onClick={handleSendMessage}
                 disabled={!messageInput.trim()}
-                className="bg-accent-purple hover:bg-accent-purple/80 px-2 md:px-4 h-8 md:h-10"
+                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-400 hover:to-blue-400 px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
               >
-                <Send className="w-3 h-3 md:w-4 md:h-4" />
+                <Send className="w-4 h-4" />
               </Button>
             </div>
           </div>
