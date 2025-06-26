@@ -70,28 +70,28 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 pb-8 overflow-y-auto">
-      <div className="max-w-6xl w-full mx-auto animate-fade-up min-h-screen flex flex-col justify-center">
+    <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 overflow-y-auto" style={{ minHeight: '100vh', height: 'auto' }}>
+      <div className="max-w-6xl w-full mx-auto animate-fade-up py-4">
         {/* Mobile-First Hero Section */}
-        <div className="text-center mb-8 md:mb-16">
-          <div className="flex flex-col items-center mb-6 md:mb-8 animate-float">
-            <div className="relative mb-4">
-              <Film className="text-5xl md:text-6xl text-purple-400 animate-glow" />
-              <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
+        <div className="text-center mb-6 md:mb-16">
+          <div className="flex flex-col items-center mb-4 md:mb-8 animate-float">
+            <div className="relative mb-3">
+              <Film className="text-4xl md:text-6xl text-purple-400 animate-glow" />
+              <div className="absolute -top-2 -right-2 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
             </div>
             <div>
-              <h1 className="text-3xl md:text-7xl font-black bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl md:text-7xl font-black bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent mb-2">
                 CineSync Duo
               </h1>
-              <div className="h-1 w-24 md:w-48 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto"></div>
+              <div className="h-1 w-20 md:w-48 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto"></div>
             </div>
           </div>
-          <p className="text-lg md:text-2xl text-gray-300 px-4 mb-3">Watch movies together in perfect sync</p>
-          <p className="text-sm md:text-base text-gray-400 px-4">Voice chat and universal platform support</p>
+          <p className="text-base md:text-2xl text-gray-300 px-4 mb-2">Watch movies together in perfect sync</p>
+          <p className="text-xs md:text-base text-gray-400 px-4">Voice chat and universal platform support</p>
         </div>
 
         {/* Mobile-Optimized Action Cards */}
-        <div className="space-y-6 md:grid md:grid-cols-2 md:gap-8 md:space-y-0 mb-8 md:mb-16">
+        <div className="space-y-4 md:grid md:grid-cols-2 md:gap-8 md:space-y-0 mb-6 md:mb-16">
           {/* Create Room Card */}
           <Card className="group glass-dark border-purple-500/20 hover:border-purple-400/40 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20 animate-scale-in">
             <CardContent className="p-6 md:p-10">
@@ -160,55 +160,55 @@ export default function Landing() {
         </div>
 
         {/* Premium Features Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8">
           <Card className="group glass border-green-500/20 hover:border-green-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20 animate-fade-up">
-            <CardContent className="p-6 text-center">
-              <div className="relative mb-4">
-                <FolderSync className="text-green-400 text-3xl mx-auto group-hover:scale-110 transition-transform duration-300" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <CardContent className="p-3 md:p-6 text-center">
+              <div className="relative mb-2 md:mb-4">
+                <FolderSync className="text-green-400 text-lg md:text-3xl mx-auto group-hover:scale-110 transition-transform duration-300" />
+                <div className="absolute -top-1 -right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse"></div>
               </div>
-              <h4 className="font-semibold text-white mb-2">Perfect Sync</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">Millisecond-precise synchronization</p>
+              <h4 className="font-semibold text-white mb-1 text-xs md:text-base">Perfect Sync</h4>
+              <p className="text-xs text-gray-400 leading-relaxed hidden md:block">Millisecond-precise synchronization</p>
             </CardContent>
           </Card>
           
           <Card className="group glass border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 animate-fade-up [animation-delay:0.1s]">
-            <CardContent className="p-6 text-center">
-              <div className="relative mb-4">
-                <MessageCircle className="text-blue-400 text-3xl mx-auto group-hover:scale-110 transition-transform duration-300" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            <CardContent className="p-3 md:p-6 text-center">
+              <div className="relative mb-2 md:mb-4">
+                <MessageCircle className="text-blue-400 text-lg md:text-3xl mx-auto group-hover:scale-110 transition-transform duration-300" />
+                <div className="absolute -top-1 -right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-blue-400 rounded-full animate-pulse"></div>
               </div>
-              <h4 className="font-semibold text-white mb-2">Voice & Chat</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">Real-time communication</p>
+              <h4 className="font-semibold text-white mb-1 text-xs md:text-base">Voice & Chat</h4>
+              <p className="text-xs text-gray-400 leading-relaxed hidden md:block">Real-time communication</p>
             </CardContent>
           </Card>
           
           <Card className="group glass border-purple-500/20 hover:border-purple-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 animate-fade-up [animation-delay:0.2s]">
-            <CardContent className="p-6 text-center">
-              <div className="relative mb-4">
-                <Shield className="text-purple-400 text-3xl mx-auto group-hover:scale-110 transition-transform duration-300" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+            <CardContent className="p-3 md:p-6 text-center">
+              <div className="relative mb-2 md:mb-4">
+                <Shield className="text-purple-400 text-lg md:text-3xl mx-auto group-hover:scale-110 transition-transform duration-300" />
+                <div className="absolute -top-1 -right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-purple-400 rounded-full animate-pulse"></div>
               </div>
-              <h4 className="font-semibold text-white mb-2">Private Rooms</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">Secure & encrypted</p>
+              <h4 className="font-semibold text-white mb-1 text-xs md:text-base">Private Rooms</h4>
+              <p className="text-xs text-gray-400 leading-relaxed hidden md:block">Secure & encrypted</p>
             </CardContent>
           </Card>
           
           <Card className="group glass border-orange-500/20 hover:border-orange-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 animate-fade-up [animation-delay:0.3s]">
-            <CardContent className="p-6 text-center">
-              <div className="relative mb-4">
-                <Sparkles className="text-orange-400 text-3xl mx-auto group-hover:scale-110 transition-transform duration-300" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+            <CardContent className="p-3 md:p-6 text-center">
+              <div className="relative mb-2 md:mb-4">
+                <Sparkles className="text-orange-400 text-lg md:text-3xl mx-auto group-hover:scale-110 transition-transform duration-300" />
+                <div className="absolute -top-1 -right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-orange-400 rounded-full animate-pulse"></div>
               </div>
-              <h4 className="font-semibold text-white mb-2">Universal Player</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">All platforms supported</p>
+              <h4 className="font-semibold text-white mb-1 text-xs md:text-base">Universal Player</h4>
+              <p className="text-xs text-gray-400 leading-relaxed hidden md:block">All platforms supported</p>
             </CardContent>
           </Card>
         </div>
         
         {/* Footer */}
-        <div className="text-center mt-12 md:mt-16 opacity-60">
-          <p className="text-sm text-gray-400">Built with modern web technologies for the best watching experience</p>
+        <div className="text-center mt-6 md:mt-16 opacity-60 pb-8">
+          <p className="text-xs md:text-sm text-gray-400">Built with modern web technologies for the best watching experience</p>
         </div>
       </div>
     </div>
