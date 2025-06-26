@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Update room with user
             await storage.addUserToRoom(roomCode, userId, isHost);
 
-            // Send join confirmation
+            // Send join confirmation with current room state
             ws.send(JSON.stringify({
               type: 'joined_room',
               payload: { 
@@ -117,6 +117,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               },
               timestamp: Date.now(),
             }));
+
+            // Send current video state to new joiner if there's a video loaded
+            if (room.currentVideoId) {
+              console.log(`Sending current video to new joiner: ${room.currentVideoId}`);
+              ws.send(JSON.stringify({
+                type: 'playback_control',
+                payload: {
+                  action: 'video_change',
+                  currentTime: room.currentTime || 0,
+                  videoId: room.currentVideoId,
+                },
+                timestamp: Date.now(),
+              }));
+            }
 
             // Broadcast user join to others
             const joinMessage: UserJoinMessage = {
