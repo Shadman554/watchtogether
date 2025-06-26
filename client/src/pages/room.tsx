@@ -106,9 +106,10 @@ export default function Room({ roomCode }: RoomPageProps) {
     }
   };
 
-  // Auto-hide chat initially
+  // Auto-hide chat initially and ensure controls are visible
   useEffect(() => {
     setShowChat(false);
+    setShowControls(true); // Always show controls by default
   }, []);
 
   if (!isConnected) {
@@ -255,18 +256,16 @@ export default function Room({ roomCode }: RoomPageProps) {
         </div>
       )}
 
-      {/* UI Toggle Button (when controls are hidden) */}
-      {!showControls && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowControls(true)}
-          className="absolute top-4 right-4 z-50 bg-cinema-dark/80 backdrop-blur-sm hover:bg-cinema-gray/80 text-gray-400 hover:text-white rounded-xl animate-slide-down"
-          title="Show UI"
-        >
-          <Eye className="w-5 h-5" />
-        </Button>
-      )}
+      {/* Always Visible Access Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setShowControls(!showControls)}
+        className="fixed top-4 right-4 z-[100] bg-accent-purple/80 backdrop-blur-sm hover:bg-accent-purple text-white rounded-full w-12 h-12 p-0 shadow-lg border-2 border-white/20"
+        title={showControls ? "Hide Controls" : "Show Controls"}
+      >
+        {showControls ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+      </Button>
 
       {/* Video Player */}
       <UniversalVideoPlayer
@@ -479,6 +478,85 @@ export default function Room({ roomCode }: RoomPageProps) {
           </Card>
         </div>
       )}
+
+      {/* Quick Access Toolbar - Always Visible */}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[90]">
+        <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
+          <CardContent className="p-3">
+            <div className="flex items-center space-x-3">
+              {/* Load Video Button */}
+              <Button
+                onClick={() => setIsUrlInputVisible(true)}
+                className="bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/80 hover:to-accent-purple/80 text-white font-semibold px-4 py-2 rounded-xl"
+              >
+                <Folder className="w-4 h-4 mr-2" />
+                Load Video
+              </Button>
+
+              {/* Chat Toggle */}
+              <Button
+                variant="ghost"
+                onClick={() => setShowChat(!showChat)}
+                className={`rounded-xl px-3 py-2 ${
+                  showChat 
+                    ? 'bg-accent-blue/20 text-accent-blue' 
+                    : 'bg-cinema-gray/50 text-gray-400 hover:text-accent-blue'
+                }`}
+              >
+                <MessageCircle className="w-4 h-4" />
+              </Button>
+
+              {/* Voice Call Toggle */}
+              <Button
+                variant="ghost"
+                onClick={toggleVoiceCall}
+                className={`rounded-xl px-3 py-2 ${
+                  isVoiceCallActive 
+                    ? 'bg-sync-green/20 text-sync-green' 
+                    : 'bg-cinema-gray/50 text-gray-400 hover:text-sync-green'
+                }`}
+              >
+                {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
+              </Button>
+
+              {/* Settings Panel Toggle */}
+              <Button
+                variant="ghost"
+                onClick={() => setShowSidePanel(!showSidePanel)}
+                className={`rounded-xl px-3 py-2 ${
+                  showSidePanel 
+                    ? 'bg-warning-orange/20 text-warning-orange' 
+                    : 'bg-cinema-gray/50 text-gray-400 hover:text-warning-orange'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+
+              {/* Room Code Display */}
+              <div className="bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 rounded-xl px-4 py-2 border border-accent-purple/30">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-gray-400">Room:</span>
+                  <span className="font-bold text-accent-purple text-sm tracking-wider">{roomCode}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(roomCode);
+                      toast({
+                        title: "Room Code Copied",
+                        description: "Share this code with your friend!",
+                      });
+                    }}
+                    className="p-1 h-auto text-gray-400 hover:text-accent-purple rounded-lg"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Voice Call Component */}
       <VoiceCall
