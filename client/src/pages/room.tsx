@@ -387,6 +387,14 @@ export default function Room({ roomCode }: RoomPageProps) {
             {/* Top Row - Primary Actions */}
             <div className="flex items-center justify-center space-x-2">
               <Button
+                variant="ghost"
+                onClick={handleBackToLobby}
+                className="bg-gray-700/50 text-gray-300 hover:text-white hover:bg-gray-600/50 rounded-lg px-3 py-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+
+              <Button
                 onClick={() => setIsUrlInputVisible(true)}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg shadow-lg text-sm"
               >
@@ -456,6 +464,15 @@ export default function Room({ roomCode }: RoomPageProps) {
 
           {/* Desktop Layout - Full Controls */}
           <div className="hidden md:flex items-center space-x-3">
+            {/* Back Button */}
+            <Button
+              variant="ghost"
+              onClick={handleBackToLobby}
+              className="bg-gray-700/50 text-gray-300 hover:text-white hover:bg-gray-600/50 rounded-xl px-4 py-3"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+
             {/* Load Video Button */}
             <Button
               onClick={() => setIsUrlInputVisible(true)}
