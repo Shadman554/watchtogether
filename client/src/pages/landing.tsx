@@ -137,7 +137,7 @@ export default function Landing() {
           <Card className="bg-cinema-dark/60 border-gray-700">
             <CardContent className="p-4">
               <FolderSync className="text-sync-green text-2xl mb-2 mx-auto" />
-              <p className="text-sm text-gray-400">Perfect FolderSync</p>
+              <p className="text-sm text-gray-400">Perfect Sync</p>
             </CardContent>
           </Card>
           <Card className="bg-cinema-dark/60 border-gray-700">
@@ -155,7 +155,7 @@ export default function Landing() {
           <Card className="bg-cinema-dark/60 border-gray-700">
             <CardContent className="p-4">
               <Sparkles className="text-warning-orange text-2xl mb-2 mx-auto" />
-              <p className="text-sm text-gray-400">AI Suggestions</p>
+              <p className="text-sm text-gray-400">Universal Player</p>
             </CardContent>
           </Card>
         </div>

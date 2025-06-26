@@ -11,7 +11,9 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
-      <Route path="/room/:roomCode" component={Room} />
+      <Route path="/room/:roomCode">
+        {(params) => <Room roomCode={params.roomCode} />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );

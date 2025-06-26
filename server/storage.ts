@@ -30,8 +30,13 @@ export class MemStorage implements IStorage {
 
   async createRoom(insertRoom: InsertRoom): Promise<Room> {
     const room: Room = {
-      ...insertRoom,
       id: this.currentRoomId++,
+      code: insertRoom.code,
+      hostId: insertRoom.hostId,
+      guestId: insertRoom.guestId || null,
+      currentVideoId: insertRoom.currentVideoId || null,
+      currentTime: insertRoom.currentTime || 0,
+      isPlaying: insertRoom.isPlaying || false,
       createdAt: new Date(),
     };
     this.rooms.set(room.code, room);
@@ -60,8 +65,12 @@ export class MemStorage implements IStorage {
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const message: Message = {
-      ...insertMessage,
       id: this.currentMessageId++,
+      roomCode: insertMessage.roomCode,
+      userId: insertMessage.userId,
+      username: insertMessage.username,
+      content: insertMessage.content,
+      type: insertMessage.type || "text",
       createdAt: new Date(),
     };
     

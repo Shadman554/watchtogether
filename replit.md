@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a real-time watch party application that allows users to create and join virtual rooms to watch YouTube videos together. The application features synchronized video playback, real-time chat, and WebSocket-based communication to ensure all participants stay in sync.
+This is a real-time watch party application called "CineSync Duo" that allows two users to create and join virtual rooms to watch videos together from multiple sources. The application features synchronized video playback, real-time chat, and WebSocket-based communication to ensure all participants stay in sync. It supports YouTube, streaming platforms like beenar.net, and direct video files.
 
 ## System Architecture
 
@@ -20,7 +20,7 @@ The application follows a full-stack TypeScript architecture with clear separati
 - **React SPA**: Single-page application using Wouter for routing
 - **Component Library**: shadcn/ui components for consistent UI/UX
 - **State Management**: TanStack Query for server state management
-- **Video Integration**: YouTube IFrame API for video playback
+- **Universal Video Player**: Supports YouTube, streaming platforms (beenar.net, streamtape, mixdrop, etc.), and direct video files
 - **WebSocket Client**: Custom hook for real-time communication
 
 ### Backend Architecture
@@ -76,8 +76,13 @@ The application is configured for Replit deployment with:
 
 ## Changelog
 
-Changelog:
-- June 26, 2025. Initial setup
+- June 26, 2025: Initial setup with YouTube-only support
+- June 26, 2025: Added universal video player supporting multiple streaming platforms:
+  - YouTube integration
+  - Streaming platforms: beenar.net, streamtape, mixdrop, doodstream, upstream, fembed
+  - Direct video file support (.mp4, .webm, .ogg, etc.)
+  - Added room code display with copy functionality
+  - Enhanced UI with cinema theme and better user experience
 
 ## User Preferences
 

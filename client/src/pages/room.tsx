@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageCircle, Mic, Settings, Folder, Sparkles, Gamepad2, Users } from "lucide-react";
-import VideoPlayer from "@/components/video-player";
+import { ArrowLeft, MessageCircle, Mic, Settings, Folder, Sparkles, Gamepad2, Users, Copy } from "lucide-react";
+import UniversalVideoPlayer from "@/components/universal-video-player";
 import ChatPanel from "@/components/chat-panel";
 import SyncStatus from "@/components/sync-status";
 import { useWebSocket } from "@/hooks/use-websocket";
@@ -17,7 +17,7 @@ interface RoomPageProps {
 export default function Room({ roomCode }: RoomPageProps) {
   const [, setLocation] = useLocation();
   const [showChat, setShowChat] = useState(false);
-  const [currentVideoId, setCurrentVideoId] = useState<string>("");
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState("");
   const [isUrlInputVisible, setIsUrlInputVisible] = useState(false);
   const { toast } = useToast();
@@ -40,41 +40,30 @@ export default function Room({ roomCode }: RoomPageProps) {
     setLocation("/");
   };
 
-  const handleVideoLoad = (videoId: string) => {
-    setCurrentVideoId(videoId);
+  const handleVideoLoad = (videoUrl: string) => {
+    setCurrentVideoUrl(videoUrl);
     // Send video change to other user
-    sendPlaybackControl("seek", 0, videoId);
+    sendPlaybackControl("seek", 0, videoUrl);
   };
 
   const handleLoadVideo = () => {
     if (!videoUrl.trim()) {
       toast({
         title: "Invalid URL",
-        description: "Please enter a valid YouTube URL.",
+        description: "Please enter a valid video URL.",
         variant: "destructive",
       });
       return;
     }
 
-    // Extract YouTube video ID from URL
-    const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
-    const match = videoUrl.match(youtubeRegex);
-    
-    if (match && match[1]) {
-      handleVideoLoad(match[1]);
-      setVideoUrl("");
-      setIsUrlInputVisible(false);
-      toast({
-        title: "Video Loaded",
-        description: "Video loaded successfully!",
-      });
-    } else {
-      toast({
-        title: "Invalid YouTube URL",
-        description: "Please enter a valid YouTube URL.",
-        variant: "destructive",
-      });
-    }
+    // Accept any URL - YouTube, streaming sites, direct video files
+    handleVideoLoad(videoUrl.trim());
+    setVideoUrl("");
+    setIsUrlInputVisible(false);
+    toast({
+      title: "Video Loaded",
+      description: "Video loaded successfully!",
+    });
   };
 
   // Auto-show chat after 3 seconds for demo
@@ -114,7 +103,26 @@ export default function Room({ roomCode }: RoomPageProps) {
             </Button>
             <div className="flex items-center space-x-3">
               <div className="w-3 h-3 bg-sync-green rounded-full animate-pulse-slow"></div>
-              <span className="font-semibold">Room: {roomCode}</span>
+              <div className="flex flex-col">
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold text-accent-purple text-lg">{roomCode}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(roomCode);
+                      toast({
+                        title: "Room Code Copied",
+                        description: "Share this code with your friend to join!",
+                      });
+                    }}
+                    className="p-1 h-auto text-gray-400 hover:text-accent-purple"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <span className="text-xs text-gray-400">Share this code with your friend</span>
+              </div>
             </div>
           </div>
 
@@ -168,8 +176,8 @@ export default function Room({ roomCode }: RoomPageProps) {
       </div>
 
       {/* Video Player */}
-      <VideoPlayer
-        videoId={currentVideoId}
+      <UniversalVideoPlayer
+        videoUrl={currentVideoUrl}
         onSync={sendSync}
         onPlaybackControl={sendPlaybackControl}
         syncStatus={syncStatus}
@@ -241,15 +249,20 @@ export default function Room({ roomCode }: RoomPageProps) {
         <div className="absolute inset-0 bg-cinema-black/90 backdrop-blur-sm flex items-center justify-center z-50">
           <Card className="w-full max-w-md mx-4 bg-cinema-dark border-gray-700">
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Load YouTube Video</h3>
+              <h3 className="text-lg font-semibold mb-4">Load Video from Any Source</h3>
               <div className="space-y-4">
-                <Input
-                  type="text"
-                  placeholder="Enter YouTube URL..."
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  className="bg-cinema-gray border-gray-600 text-white placeholder-gray-500 focus:border-accent-blue"
-                />
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    placeholder="Enter video URL (YouTube, beenar.net, streaming sites, direct links...)"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    className="bg-cinema-gray border-gray-600 text-white placeholder-gray-500 focus:border-accent-blue"
+                  />
+                  <div className="text-xs text-gray-400">
+                    Supports: YouTube, beenar.net, streamtape, mixdrop, doodstream, upstream, fembed, and direct video files
+                  </div>
+                </div>
                 <div className="flex space-x-2">
                   <Button
                     onClick={handleLoadVideo}
