@@ -1,0 +1,191 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(267, 62%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(220, 85%, 57%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Cinema theme colors */
+  --cinema-black: hsl(0, 0%, 4%);
+  --cinema-dark: hsl(0, 0%, 10%);
+  --cinema-gray: hsl(0, 0%, 16%);
+  --sync-green: hsl(159, 68%, 38%);
+  --warning-orange: hsl(43, 89%, 48%);
+  --accent-purple: hsl(267, 62%, 54%);
+  --accent-blue: hsl(220, 85%, 57%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(267, 62%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(220, 85%, 57%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background: var(--cinema-black);
+    color: white;
+    overflow: hidden;
+  }
+}
+
+@layer utilities {
+  .bg-cinema-black {
+    background-color: var(--cinema-black);
+  }
+  
+  .bg-cinema-dark {
+    background-color: var(--cinema-dark);
+  }
+  
+  .bg-cinema-gray {
+    background-color: var(--cinema-gray);
+  }
+  
+  .text-sync-green {
+    color: var(--sync-green);
+  }
+  
+  .bg-sync-green {
+    background-color: var(--sync-green);
+  }
+  
+  .text-warning-orange {
+    color: var(--warning-orange);
+  }
+  
+  .bg-warning-orange {
+    background-color: var(--warning-orange);
+  }
+  
+  .text-accent-purple {
+    color: var(--accent-purple);
+  }
+  
+  .bg-accent-purple {
+    background-color: var(--accent-purple);
+  }
+  
+  .text-accent-blue {
+    color: var(--accent-blue);
+  }
+  
+  .bg-accent-blue {
+    background-color: var(--accent-blue);
+  }
+  
+  .border-accent-purple {
+    border-color: var(--accent-purple);
+  }
+  
+  .border-accent-blue {
+    border-color: var(--accent-blue);
+  }
+  
+  .border-sync-green {
+    border-color: var(--sync-green);
+  }
+}
+
+/* Custom animations */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Scrollbar styling for chat */
+.chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: var(--cinema-gray);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--accent-purple);
+  border-radius: 2px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
