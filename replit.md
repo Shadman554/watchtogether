@@ -99,6 +99,13 @@ The application is configured for Replit deployment with:
   - Mobile-responsive chat panel with optimized sizing
   - Improved WebSocket communication for better real-time sync
   - Enhanced playback control synchronization between host and guest
+- June 26, 2025: Voice call implementation and deployment preparation:
+  - Implemented WebRTC voice calling with proper signaling through WebSocket
+  - Fixed guest video loading - guests now automatically receive videos loaded by host
+  - Enhanced mobile responsiveness for voice call controls, chat, and settings
+  - Added comprehensive deployment files (README.md, .env.example, .gitignore)
+  - Prepared project for GitHub deployment with full documentation
+  - Fixed voice call connectivity issues with improved caller/answerer pattern
 
 ## User Preferences
 

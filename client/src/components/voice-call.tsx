@@ -152,16 +152,21 @@ export default function VoiceCall({ isActive, onToggle, roomCode, userId, remote
         }
       };
 
-      // Create and send offer (caller)
-      setTimeout(async () => {
-        try {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          sendSignalingMessage('offer', offer);
-        } catch (error) {
-          console.error('Error creating offer:', error);
-        }
-      }, 1000);
+      // Only host creates offers, guest waits for offers
+      if (remoteUserId) { // If there's already a remote user, create offer
+        setTimeout(async () => {
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            sendSignalingMessage('offer', offer);
+            console.log('Sent offer as caller');
+          } catch (error) {
+            console.error('Error creating offer:', error);
+          }
+        }, 1000);
+      } else {
+        console.log('Waiting for remote user to join...');
+      }
 
       toast({
         title: "Voice Call Starting",
@@ -265,11 +270,73 @@ export default function VoiceCall({ isActive, onToggle, roomCode, userId, remote
       <audio ref={localAudioRef} muted />
       <audio ref={remoteAudioRef} autoPlay />
       
-      {/* Voice Call Status Card */}
-      <div className="absolute bottom-4 left-4 z-40 animate-slide-up">
+      {/* Mobile-Responsive Voice Call Status Card */}
+      <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 z-40 animate-slide-up">
         <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-4">
+          <CardContent className="p-2 md:p-4">
+            {/* Mobile Layout - Stacked */}
+            <div className="block md:hidden space-y-2">
+              {/* Connection Status */}
+              <div className="flex items-center justify-center space-x-1">
+                <div className={`w-2 h-2 rounded-full ${
+                  connectionStatus === 'connected' ? 'bg-sync-green animate-pulse' :
+                  connectionStatus === 'connecting' ? 'bg-warning-orange animate-pulse' :
+                  'bg-red-500'
+                }`} />
+                <span className="text-xs font-medium text-white">
+                  {connectionStatus === 'connected' ? 'Connected' :
+                   connectionStatus === 'connecting' ? 'Connecting...' :
+                   'Disconnected'}
+                </span>
+              </div>
+
+              {/* Voice Controls */}
+              <div className="flex items-center justify-center space-x-1">
+                {/* Mute Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMute}
+                  className={`rounded-lg p-1.5 ${
+                    isMuted 
+                      ? 'bg-red-500/20 text-red-400' 
+                      : 'bg-sync-green/20 text-sync-green'
+                  }`}
+                  title={isMuted ? "Unmute" : "Mute"}
+                >
+                  {isMuted ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
+                </Button>
+
+                {/* Deafen Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleDeafen}
+                  className={`rounded-lg p-1.5 ${
+                    isDeafened 
+                      ? 'bg-red-500/20 text-red-400' 
+                      : 'bg-accent-blue/20 text-accent-blue'
+                  }`}
+                  title={isDeafened ? "Enable Audio" : "Disable Audio"}
+                >
+                  {isDeafened ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                </Button>
+
+                {/* End Call Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onToggle}
+                  className="bg-red-500/20 text-red-400 rounded-lg p-1.5"
+                  title="End Call"
+                >
+                  <PhoneOff className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Desktop Layout - Horizontal */}
+            <div className="hidden md:flex items-center space-x-4">
               {/* Connection Status */}
               <div className="flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${
