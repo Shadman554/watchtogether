@@ -371,32 +371,32 @@ export default function Room({ roomCode }: RoomPageProps) {
       )}
 
       {/* Mobile-Responsive Bottom Toolbar */}
-      <div className="fixed bottom-2 left-2 right-2 md:bottom-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 z-[90]">
+      <div className="fixed bottom-2 left-2 right-2 md:bottom-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 z-[90] max-w-full">
         <div className="bg-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl rounded-xl md:rounded-2xl p-2 md:p-4">
           {/* Mobile Layout - Two Rows */}
           <div className="block md:hidden space-y-2">
             {/* Top Row - Primary Actions */}
-            <div className="flex items-center justify-center space-x-2">
+            <div className="flex items-center justify-center space-x-1">
               <Button
                 variant="ghost"
                 onClick={handleBackToLobby}
-                className="bg-gray-700/50 text-gray-300 hover:text-white hover:bg-gray-600/50 rounded-lg px-3 py-2"
+                className="bg-gray-700/50 text-gray-300 hover:text-white hover:bg-gray-600/50 rounded-lg px-2 py-2"
               >
                 <ArrowLeft className="w-4 h-4" />
               </Button>
 
               <Button
                 onClick={() => setIsUrlInputVisible(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg shadow-lg text-sm"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-3 py-2 rounded-lg shadow-lg text-xs"
               >
-                <Folder className="w-4 h-4 mr-1" />
-                Load Video
+                <Folder className="w-3 h-3 mr-1" />
+                Load
               </Button>
 
               <Button
                 variant="ghost"
                 onClick={() => setShowChat(!showChat)}
-                className={`rounded-lg px-3 py-2 ${
+                className={`rounded-lg px-2 py-2 ${
                   showChat 
                     ? 'bg-blue-600/20 text-blue-400 border border-blue-400/30' 
                     : 'bg-gray-700/50 text-gray-300'
@@ -408,7 +408,7 @@ export default function Room({ roomCode }: RoomPageProps) {
               <Button
                 variant="ghost"
                 onClick={toggleVoiceCall}
-                className={`rounded-lg px-3 py-2 ${
+                className={`rounded-lg px-2 py-2 ${
                   isVoiceCallActive 
                     ? 'bg-green-600/20 text-green-400 border border-green-400/30' 
                     : 'bg-gray-700/50 text-gray-300'
@@ -420,7 +420,7 @@ export default function Room({ roomCode }: RoomPageProps) {
               <Button
                 variant="ghost"
                 onClick={() => setShowSidePanel(!showSidePanel)}
-                className={`rounded-lg px-3 py-2 ${
+                className={`rounded-lg px-2 py-2 ${
                   showSidePanel 
                     ? 'bg-orange-600/20 text-orange-400 border border-orange-400/30' 
                     : 'bg-gray-700/50 text-gray-300'

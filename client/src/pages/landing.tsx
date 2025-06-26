@@ -70,7 +70,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cinema-black via-cinema-dark to-accent-purple/20 flex items-center justify-center p-4 py-8 md:py-4 overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-cinema-black via-cinema-dark to-accent-purple/20 p-4 py-8 md:py-4 overflow-y-auto md:flex md:items-center md:justify-center">
       <div className="max-w-4xl w-full">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">

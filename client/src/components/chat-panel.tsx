@@ -95,8 +95,8 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
         </CardHeader>
 
         {/* Messages Container - Mobile Responsive */}
-        <CardContent className="flex-1 p-2 md:p-4 h-full pb-0">
-          <ScrollArea className={`pr-2 md:pr-4 chat-messages ${isVisible ? 'h-[calc(100vh-220px)] md:h-[calc(100vh-200px)]' : 'h-0'}`}>
+        <CardContent className="flex-1 p-2 md:p-4 pb-0 flex flex-col h-[calc(100vh-120px)] md:h-[calc(100vh-160px)]">
+          <ScrollArea className={`pr-2 md:pr-4 chat-messages flex-1 ${isVisible ? 'mb-4' : 'h-0'}`}>
             <div className="space-y-4">
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 mt-8">
@@ -162,8 +162,8 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
             </div>
           </ScrollArea>
 
-          {/* Mobile-Responsive Chat Input */}
-          <div className="pt-2 md:pt-4 border-t border-gray-700 mt-2 md:mt-4">
+          {/* Mobile-Responsive Chat Input - Always at bottom */}
+          <div className="pt-2 md:pt-4 border-t border-gray-700 mt-auto bg-cinema-dark/95 backdrop-blur-sm">
             {/* Quick Reactions - Mobile Responsive */}
             <div className="flex justify-center space-x-1 md:space-x-2 mb-2 md:mb-3">
               {EMOJI_REACTIONS.map((emoji) => (

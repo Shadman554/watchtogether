@@ -271,7 +271,7 @@ export default function VoiceCall({ isActive, onToggle, roomCode, userId, remote
       <audio ref={remoteAudioRef} autoPlay />
       
       {/* Mobile-Responsive Voice Call Status Card */}
-      <div className="fixed bottom-24 left-2 md:bottom-4 md:left-4 z-40 animate-slide-up">
+      <div className="fixed bottom-32 left-2 md:bottom-4 md:left-4 z-40 animate-slide-up">
         <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
           <CardContent className="p-2 md:p-4">
             {/* Mobile Layout - Stacked */}
