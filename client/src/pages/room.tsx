@@ -57,8 +57,12 @@ export default function Room({ roomCode }: RoomPageProps) {
 
   const handleVideoLoad = (videoUrl: string) => {
     setCurrentVideoUrl(videoUrl);
-    // Send video change to other user
-    sendPlaybackControl("seek", 0, videoUrl);
+    // Send video change to other user with video URL
+    sendPlaybackControl("video_change", 0, videoUrl);
+    // Also send initial sync
+    setTimeout(() => {
+      sendSync(0, false, videoUrl);
+    }, 500);
   };
 
   const handleLoadVideo = () => {
@@ -83,21 +87,11 @@ export default function Room({ roomCode }: RoomPageProps) {
   const toggleVoiceCall = () => {
     setIsVoiceCallActive(!isVoiceCallActive);
     if (!isVoiceCallActive) {
-      // Start voice call
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-          toast({
-            title: "Voice Call Started",
-            description: "You can now talk with your friend!",
-          });
-        })
-        .catch(err => {
-          toast({
-            title: "Microphone Access Denied",
-            description: "Please allow microphone access to use voice chat.",
-            variant: "destructive",
-          });
-        });
+      // Starting voice call is now handled by the VoiceCall component
+      toast({
+        title: "Voice Call Starting",
+        description: "Requesting microphone access...",
+      });
     } else {
       toast({
         title: "Voice Call Ended",
@@ -111,6 +105,25 @@ export default function Room({ roomCode }: RoomPageProps) {
     setShowChat(false);
     setShowControls(true); // Always show controls by default
   }, []);
+
+  // Listen for video URL changes from remote user
+  useEffect(() => {
+    const handleVideoUrlChange = (event: CustomEvent) => {
+      const { videoUrl } = event.detail;
+      console.log('Received video URL from remote user:', videoUrl);
+      setCurrentVideoUrl(videoUrl);
+      toast({
+        title: "Video Loaded by Host",
+        description: "A new video has been loaded in the room!",
+      });
+    };
+
+    window.addEventListener('videoUrlChange', handleVideoUrlChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('videoUrlChange', handleVideoUrlChange as EventListener);
+    };
+  }, [toast]);
 
   if (!isConnected) {
     return (

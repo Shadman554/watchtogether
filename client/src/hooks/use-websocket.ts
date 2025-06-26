@@ -130,6 +130,14 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
                               message.payload.action === 'pause' ? false : prev.remoteIsPlaying,
               latency: Date.now() - message.timestamp,
             }));
+            
+            // Handle video change - when host loads a new video
+            if (message.payload.action === 'video_change' && message.payload.videoId) {
+              // Trigger video URL update for guest
+              window.dispatchEvent(new CustomEvent('videoUrlChange', {
+                detail: { videoUrl: message.payload.videoId }
+              }));
+            }
             break;
 
           case "error":

@@ -163,6 +163,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               updates.isPlaying = true;
             } else if (controlMessage.payload.action === 'pause') {
               updates.isPlaying = false;
+            } else if (controlMessage.payload.action === 'video_change') {
+              // Handle video change - update the current video URL
+              updates.isPlaying = false;
+              updates.currentTime = 0;
             }
             
             if (controlMessage.payload.currentTime !== undefined) {
@@ -177,6 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             // Broadcast control to other user
             broadcastToRoom(ws.roomCode, controlMessage, ws);
+            console.log(`Broadcasting ${controlMessage.payload.action} to room ${ws.roomCode}`, controlMessage.payload);
             break;
 
           case 'chat':
