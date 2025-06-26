@@ -198,6 +198,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Broadcasting ${controlMessage.payload.action} to room ${ws.roomCode}`, controlMessage.payload);
             break;
 
+          case 'webrtc_signal':
+            if (!ws.roomCode) return;
+            
+            // Forward WebRTC signaling messages to other users in the room
+            console.log(`Forwarding WebRTC signal in room ${ws.roomCode}:`, message.payload.type);
+            broadcastToRoom(ws.roomCode, message, ws);
+            break;
+
           case 'chat':
             if (!ws.roomCode || !ws.userId || !ws.username) return;
             

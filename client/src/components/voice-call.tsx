@@ -10,9 +10,19 @@ interface VoiceCallProps {
   roomCode: string;
   userId: string;
   remoteUserId?: string;
+  sendWebRTCSignal: (type: string, data: any) => void;
 }
 
-export default function VoiceCall({ isActive, onToggle, roomCode, userId, remoteUserId }: VoiceCallProps) {
+interface WebRTCSignalMessage {
+  type: string;
+  payload: {
+    type: 'offer' | 'answer' | 'ice-candidate';
+    data: any;
+    userId: string;
+  };
+}
+
+export default function VoiceCall({ isActive, onToggle, roomCode, userId, remoteUserId, sendWebRTCSignal }: VoiceCallProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
@@ -22,6 +32,7 @@ export default function VoiceCall({ isActive, onToggle, roomCode, userId, remote
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localAudioRef = useRef<HTMLAudioElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
   
   const { toast } = useToast();
 
@@ -33,38 +44,128 @@ export default function VoiceCall({ isActive, onToggle, roomCode, userId, remote
     ]
   };
 
+  // Use existing WebSocket for signaling
+  const setupWebRTCSignaling = () => {
+    // Listen for WebRTC signaling messages on the window
+    const handleWebRTCMessage = (event: CustomEvent) => {
+      handleSignalingMessage(event.detail);
+    };
+
+    window.addEventListener('webrtc_signal', handleWebRTCMessage as EventListener);
+    
+    return () => {
+      window.removeEventListener('webrtc_signal', handleWebRTCMessage as EventListener);
+    };
+  };
+
+  // Send signaling message using the passed function
+  const sendSignalingMessage = (type: string, data: any) => {
+    sendWebRTCSignal(type, data);
+  };
+
+  // Handle incoming signaling messages
+  const handleSignalingMessage = async (payload: any) => {
+    const pc = peerConnectionRef.current;
+    if (!pc) return;
+
+    try {
+      switch (payload.type) {
+        case 'offer':
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.data));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          sendSignalingMessage('answer', answer);
+          break;
+
+        case 'answer':
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.data));
+          break;
+
+        case 'ice-candidate':
+          await pc.addIceCandidate(new RTCIceCandidate(payload.data));
+          break;
+      }
+    } catch (error) {
+      console.error('Error handling signaling message:', error);
+    }
+  };
+
   const startVoiceCall = async () => {
     try {
       setConnectionStatus('connecting');
       
-      // Get user media with improved audio settings
+      // Set up WebRTC signaling
+      const cleanup = setupWebRTCSignaling();
+      
+      // Get user media
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 44100,
-          channelCount: 2
+          autoGainControl: true
         }, 
         video: false 
       });
       
       localStreamRef.current = stream;
       
-      // Set up local audio element to hear yourself (optional - usually disabled)
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = stream;
-        localAudioRef.current.muted = true; // Mute local playback to avoid feedback
-      }
-      
-      // Simple audio-only voice chat implementation
-      // For a full WebRTC implementation, you'd need a signaling server
-      // For now, we'll use a simplified approach with WebAudio API
-      
-      setConnectionStatus('connected');
+      // Create peer connection
+      const pc = new RTCPeerConnection(rtcConfig);
+      peerConnectionRef.current = pc;
+
+      // Add local stream to peer connection
+      stream.getTracks().forEach(track => {
+        pc.addTrack(track, stream);
+      });
+
+      // Handle remote stream
+      pc.ontrack = (event) => {
+        const [remoteStream] = event.streams;
+        remoteStreamRef.current = remoteStream;
+        
+        if (remoteAudioRef.current) {
+          remoteAudioRef.current.srcObject = remoteStream;
+          remoteAudioRef.current.play().catch(console.error);
+        }
+        
+        setConnectionStatus('connected');
+        toast({
+          title: "Voice Connected!",
+          description: "You can now hear and talk to your friend.",
+        });
+      };
+
+      // Handle ICE candidates
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          sendSignalingMessage('ice-candidate', event.candidate);
+        }
+      };
+
+      // Handle connection state changes
+      pc.onconnectionstatechange = () => {
+        console.log('Connection state:', pc.connectionState);
+        if (pc.connectionState === 'connected') {
+          setConnectionStatus('connected');
+        } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+          setConnectionStatus('disconnected');
+        }
+      };
+
+      // Create and send offer (caller)
+      setTimeout(async () => {
+        try {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          sendSignalingMessage('offer', offer);
+        } catch (error) {
+          console.error('Error creating offer:', error);
+        }
+      }, 1000);
+
       toast({
-        title: "Voice Call Started",
-        description: "Microphone is active. Audio will be shared when both users are connected.",
+        title: "Voice Call Starting",
+        description: "Connecting to your friend...",
       });
 
     } catch (error) {

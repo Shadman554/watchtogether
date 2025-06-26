@@ -143,6 +143,13 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
             }
             break;
 
+          case "webrtc_signal":
+            // Forward WebRTC signaling to voice call component
+            window.dispatchEvent(new CustomEvent('webrtc_signal', {
+              detail: message.payload
+            }));
+            break;
+
           case "error":
             toast({
               title: "Error",
@@ -219,6 +226,16 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
     }
   }, []);
 
+  const sendWebRTCSignal = useCallback((type: string, data: any) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: "webrtc_signal",
+        payload: { type, data, userId },
+        timestamp: Date.now(),
+      }));
+    }
+  }, [userId]);
+
   return {
     isConnected,
     connectedUsers,
@@ -227,5 +244,6 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
     sendMessage,
     sendSync,
     sendPlaybackControl,
+    sendWebRTCSignal,
   };
 }

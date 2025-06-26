@@ -38,6 +38,7 @@ export default function Room({ roomCode }: RoomPageProps) {
     sendMessage,
     sendSync,
     sendPlaybackControl,
+    sendWebRTCSignal,
   } = useWebSocket(roomCode, userId, username, isHost);
 
   // Show room code notification when connected
@@ -771,6 +772,7 @@ export default function Room({ roomCode }: RoomPageProps) {
         roomCode={roomCode}
         userId={userId}
         remoteUserId={connectedUsers.find(u => u.userId !== userId)?.userId}
+        sendWebRTCSignal={sendWebRTCSignal}
       />
     </div>
   );
