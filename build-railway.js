@@ -10,14 +10,11 @@ try {
     mkdirSync('dist', { recursive: true });
   }
 
-  console.log('Installing build dependencies...');
-  execSync('npm install vite esbuild @vitejs/plugin-react @tailwindcss/vite tailwindcss autoprefixer postcss', { stdio: 'inherit' });
-  
   console.log('Building client with Vite...');
   execSync('npx vite build', { stdio: 'inherit' });
   
   console.log('Building server with esbuild...');
-  execSync('npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist', { stdio: 'inherit' });
+  execSync('npx esbuild server/index.prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js --target=node20', { stdio: 'inherit' });
   
   console.log('Railway build completed successfully!');
 } catch (error) {

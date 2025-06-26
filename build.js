@@ -7,7 +7,7 @@ try {
   execSync('npx vite build', { stdio: 'inherit' });
   
   console.log('Building server...');
-  execSync('npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist', { stdio: 'inherit' });
+  execSync('npx esbuild server/index.prod.ts --platform=node --packages=external --bundle --format=esm --outdir=dist', { stdio: 'inherit' });
   
   console.log('Build completed successfully!');
 } catch (error) {
