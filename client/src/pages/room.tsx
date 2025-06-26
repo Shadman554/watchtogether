@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageCircle, Mic, MicOff, Settings, Folder, Sparkles, Gamepad2, Users, Copy, Eye, EyeOff, Phone, PhoneOff, Volume2, Monitor } from "lucide-react";
+import { ArrowLeft, MessageCircle, Mic, MicOff, Settings, Folder, Sparkles, Gamepad2, Users, Copy, Eye, EyeOff, Phone, PhoneOff, Volume2, Monitor, Star, Zap, Heart, Share2 } from "lucide-react";
 import UniversalVideoPlayer from "@/components/universal-video-player";
 import ChatPanel from "@/components/chat-panel";
 import SyncStatus from "@/components/sync-status";
@@ -134,18 +134,36 @@ export default function Room({ roomCode }: RoomPageProps) {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cinema-black via-cinema-dark to-accent-purple/10 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-accent-purple border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h3 className="text-xl font-semibold mb-2">Connecting to CineSync Duo...</h3>
-          <p className="text-gray-400">Establishing secure connection</p>
-          <div className="mt-6 bg-cinema-dark/90 backdrop-blur-sm rounded-xl p-6 border border-accent-purple/30 shadow-xl">
-            <div className="flex items-center justify-center space-x-3 mb-2">
-              <div className="w-3 h-3 bg-accent-purple rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-400">Room Code:</span>
-              <span className="font-bold text-accent-purple text-3xl tracking-wider">{roomCode}</span>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center animate-fade-up">
+          <div className="relative mb-8">
+            <div className="w-20 h-20 border-4 border-purple-500/30 border-t-purple-400 rounded-full animate-spin mx-auto"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <div className="w-8 h-8 bg-purple-400 rounded-full animate-pulse"></div>
             </div>
-            <p className="text-xs text-gray-500">Share this code with your friend to join</p>
+          </div>
+          <h3 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
+            Connecting to CineSync Duo...
+          </h3>
+          <p className="text-gray-300 mb-8 text-lg">Establishing secure connection</p>
+          
+          <div className="glass-dark rounded-2xl p-8 border border-purple-500/30 shadow-2xl max-w-md mx-auto animate-glow">
+            <div className="flex items-center justify-center space-x-4 mb-4">
+              <div className="flex space-x-1">
+                <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
+                <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse [animation-delay:0.2s]"></div>
+                <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+              </div>
+              <span className="text-gray-300 font-medium">Room Code:</span>
+            </div>
+            <div className="font-black text-4xl md:text-5xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent tracking-wider mb-2">
+              {roomCode}
+            </div>
+            <p className="text-sm text-gray-400 mb-4">Share this code with your friend to join</p>
+            <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span>Secure • Private • Encrypted</span>
+            </div>
           </div>
         </div>
       </div>
@@ -153,18 +171,76 @@ export default function Room({ roomCode }: RoomPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900/20 relative overflow-hidden">
-      
-
-      
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Premium Header Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-purple-500/20">
+        <div className="flex items-center justify-between p-4 max-w-7xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              onClick={handleBackToLobby}
+              className="glass hover:bg-purple-500/20 border border-purple-500/30 rounded-xl p-3 transition-all duration-300 hover:scale-105"
+            >
+              <ArrowLeft className="w-5 h-5 text-purple-400" />
+            </Button>
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
+                CineSync Duo
+              </h1>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <div className="glass rounded-xl px-4 py-2 border border-purple-500/30">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-400">Room:</span>
+                <span className="font-bold text-purple-400 text-lg tracking-wider">{roomCode}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(roomCode);
+                    toast({ title: "Copied!", description: "Room code copied to clipboard" });
+                  }}
+                  className="p-1 hover:bg-purple-500/20 rounded-lg transition-colors"
+                >
+                  <Copy className="w-4 h-4 text-purple-400" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <div className="flex -space-x-2">
+                {connectedUsers.map((user, index) => (
+                  <div
+                    key={user.userId}
+                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+                      user.isHost 
+                        ? 'bg-purple-500 border-purple-400 text-white' 
+                        : 'bg-blue-500 border-blue-400 text-white'
+                    }`}
+                    title={user.username}
+                  >
+                    {user.username.charAt(0).toUpperCase()}
+                  </div>
+                ))}
+              </div>
+              <span className="text-sm text-gray-400">{connectedUsers.length}/2</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Video Player */}
-      <UniversalVideoPlayer
-        videoUrl={currentVideoUrl}
-        onSync={sendSync}
-        onPlaybackControl={sendPlaybackControl}
-        syncStatus={syncStatus}
-      />
+      <div className="pt-20">
+        <UniversalVideoPlayer
+          videoUrl={currentVideoUrl}
+          onSync={sendSync}
+          onPlaybackControl={sendPlaybackControl}
+          syncStatus={syncStatus}
+        />
+      </div>
 
       {/* Chat Panel */}
       <ChatPanel
