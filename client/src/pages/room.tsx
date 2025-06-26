@@ -176,8 +176,8 @@ export default function Room({ roomCode }: RoomPageProps) {
       />
 
       {/* Modern Side Panel - Mobile Responsive */}
-      {showSidePanel && showControls && (
-        <div className="absolute left-2 top-20 md:left-4 md:top-24 z-40 animate-slide-up">
+      {showSidePanel && (
+        <div className="fixed left-2 top-4 md:left-4 md:top-24 bottom-32 md:bottom-auto z-40 animate-slide-up overflow-y-auto">
           <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl w-56 md:w-64">
             <CardContent className="p-4">
               <h3 className="text-sm font-semibold text-white mb-4 flex items-center">

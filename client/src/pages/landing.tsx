@@ -70,24 +70,24 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cinema-black via-cinema-dark to-accent-purple/20 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-cinema-black via-cinema-dark to-accent-purple/20 flex items-center justify-center p-4 py-8 md:py-4 overflow-y-auto">
       <div className="max-w-4xl w-full">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-6">
-            <Film className="text-4xl text-accent-purple mr-4" />
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-white to-accent-purple bg-clip-text text-transparent">
+        <div className="text-center mb-8 md:mb-12">
+          <div className="flex items-center justify-center mb-4 md:mb-6">
+            <Film className="text-3xl md:text-4xl text-accent-purple mr-2 md:mr-4" />
+            <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-accent-purple bg-clip-text text-transparent">
               CineSync Duo
             </h1>
           </div>
-          <p className="text-xl text-gray-300">Watch movies together in perfect sync, anywhere in the world</p>
+          <p className="text-lg md:text-xl text-gray-300 px-2">Watch movies together in perfect sync, anywhere in the world</p>
         </div>
 
         {/* Main Action Cards */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Create Room Card */}
           <Card className="bg-cinema-dark/80 backdrop-blur-sm border-gray-700 hover:border-accent-purple transition-all duration-300 hover:shadow-lg hover:shadow-accent-purple/20">
-            <CardContent className="p-8">
+            <CardContent className="p-6 md:p-8">
               <div className="flex items-center mb-4">
                 <Plus className="text-2xl text-sync-green mr-3" />
                 <h3 className="text-2xl font-semibold">Create Room</h3>
@@ -105,7 +105,7 @@ export default function Landing() {
 
           {/* Join Room Card */}
           <Card className="bg-cinema-dark/80 backdrop-blur-sm border-gray-700 hover:border-accent-blue transition-all duration-300 hover:shadow-lg hover:shadow-accent-blue/20">
-            <CardContent className="p-8">
+            <CardContent className="p-6 md:p-8">
               <div className="flex items-center mb-4">
                 <LogIn className="text-2xl text-accent-blue mr-3" />
                 <h3 className="text-2xl font-semibold">Join Room</h3>

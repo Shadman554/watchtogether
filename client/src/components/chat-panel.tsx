@@ -61,7 +61,7 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
   };
 
   return (
-    <div className={`absolute top-0 right-0 w-full md:w-80 h-full bg-cinema-dark/95 backdrop-blur-sm border-l border-gray-700 transform transition-transform duration-300 z-40 ${
+    <div className={`fixed top-0 right-0 w-full md:w-80 h-full bg-cinema-dark/95 backdrop-blur-sm border-l border-gray-700 transform transition-transform duration-300 z-50 ${
       isVisible ? 'translate-x-0' : 'translate-x-full'
     }`}>
       <Card className="h-full bg-transparent border-0">
@@ -96,7 +96,7 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
 
         {/* Messages Container - Mobile Responsive */}
         <CardContent className="flex-1 p-2 md:p-4 h-full pb-0">
-          <ScrollArea className={`pr-2 md:pr-4 chat-messages ${isVisible ? 'h-[calc(100vh-160px)] md:h-[calc(100vh-200px)]' : 'h-0'}`}>
+          <ScrollArea className={`pr-2 md:pr-4 chat-messages ${isVisible ? 'h-[calc(100vh-220px)] md:h-[calc(100vh-200px)]' : 'h-0'}`}>
             <div className="space-y-4">
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 mt-8">
