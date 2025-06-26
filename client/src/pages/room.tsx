@@ -36,6 +36,17 @@ export default function Room({ roomCode }: RoomPageProps) {
     sendPlaybackControl,
   } = useWebSocket(roomCode, userId, username, isHost);
 
+  // Show room code notification when connected
+  useEffect(() => {
+    if (isConnected && isHost) {
+      toast({
+        title: "Room Created Successfully!",
+        description: `Room Code: ${roomCode} - Share this with your friend`,
+        duration: 10000,
+      });
+    }
+  }, [isConnected, isHost, roomCode, toast]);
+
   const handleBackToLobby = () => {
     setLocation("/");
   };
@@ -66,12 +77,9 @@ export default function Room({ roomCode }: RoomPageProps) {
     });
   };
 
-  // Auto-show chat after 3 seconds for demo
+  // Auto-hide chat initially
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowChat(true);
-    }, 3000);
-    return () => clearTimeout(timer);
+    setShowChat(false);
   }, []);
 
   if (!isConnected) {
@@ -80,7 +88,13 @@ export default function Room({ roomCode }: RoomPageProps) {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-accent-purple border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <h3 className="text-xl font-semibold mb-2">Connecting...</h3>
-          <p className="text-gray-400">Establishing connection to room {roomCode}</p>
+          <p className="text-gray-400">Establishing connection to room</p>
+          <div className="mt-4 bg-cinema-dark/80 rounded-lg p-4 border border-accent-purple/30">
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-sm text-gray-400">Room Code:</span>
+              <span className="font-bold text-accent-purple text-2xl tracking-wider">{roomCode}</span>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -89,7 +103,7 @@ export default function Room({ roomCode }: RoomPageProps) {
   return (
     <div className="min-h-screen bg-cinema-black relative overflow-hidden">
       {/* Top Bar */}
-      <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-cinema-black/90 to-transparent p-4">
+      <div className="absolute top-0 left-0 right-0 z-50 bg-cinema-black/95 backdrop-blur-sm border-b border-gray-700 p-4">
         <div className="flex items-center justify-between">
           {/* Room Info */}
           <div className="flex items-center space-x-4">
@@ -103,9 +117,10 @@ export default function Room({ roomCode }: RoomPageProps) {
             </Button>
             <div className="flex items-center space-x-3">
               <div className="w-3 h-3 bg-sync-green rounded-full animate-pulse-slow"></div>
-              <div className="flex flex-col">
-                <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-accent-purple text-lg">{roomCode}</span>
+              <div className="bg-cinema-dark/80 rounded-lg p-3 border border-accent-purple/30">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="text-sm text-gray-400">Room Code:</span>
+                  <span className="font-bold text-accent-purple text-xl tracking-wider">{roomCode}</span>
                   <Button
                     variant="ghost"
                     size="sm"

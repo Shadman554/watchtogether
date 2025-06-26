@@ -122,8 +122,14 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
             break;
 
           case "playback_control":
-            // Handle remote playback control
-            // This will be processed by the video player component
+            // Handle remote playback control and update sync status
+            setSyncStatus(prev => ({
+              ...prev,
+              remoteTime: message.payload.currentTime || prev.remoteTime,
+              remoteIsPlaying: message.payload.action === 'play' ? true : 
+                              message.payload.action === 'pause' ? false : prev.remoteIsPlaying,
+              latency: Date.now() - message.timestamp,
+            }));
             break;
 
           case "error":

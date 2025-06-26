@@ -29,6 +29,7 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<number>();
+  const syncIntervalRef = useRef<number>();
 
   // Detect video type
   const getVideoType = (url: string) => {
@@ -82,14 +83,13 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     };
 
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime);
-      if (syncMode && Math.abs(video.currentTime - syncStatus.remoteTime) > 1) {
-        onSync(video.currentTime, !video.paused, videoUrl);
-      }
+      const newTime = video.currentTime;
+      setCurrentTime(newTime);
     };
 
     const handlePlay = () => {
       setIsPlaying(true);
+      console.log('Video play event - sending to remote');
       if (syncMode) {
         onPlaybackControl("play", video.currentTime, videoUrl);
       }
@@ -97,6 +97,7 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
 
     const handlePause = () => {
       setIsPlaying(false);
+      console.log('Video pause event - sending to remote');
       if (syncMode) {
         onPlaybackControl("pause", video.currentTime, videoUrl);
       }
@@ -121,22 +122,50 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     };
   }, [videoUrl, videoType, syncMode, onSync, onPlaybackControl, syncStatus.remoteTime]);
 
+  // Heartbeat sync system - sends sync updates every 2 seconds
+  useEffect(() => {
+    if (!syncMode || videoType !== 'direct') return;
+
+    if (syncIntervalRef.current) {
+      clearInterval(syncIntervalRef.current);
+    }
+
+    syncIntervalRef.current = window.setInterval(() => {
+      const video = videoRef.current;
+      if (video && !video.paused) {
+        onSync(video.currentTime, !video.paused, videoUrl);
+      }
+    }, 2000);
+
+    return () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+      }
+    };
+  }, [syncMode, videoType, videoUrl, onSync]);
+
   // Sync with remote player
   useEffect(() => {
-    if (!syncMode) return;
+    if (!syncMode || !syncStatus.isSync) return;
 
     const video = videoRef.current;
-    if (video && videoType === 'direct') {
+    if (video && videoType === 'direct' && syncStatus.remoteTime > 0) {
       const timeDiff = Math.abs(currentTime - syncStatus.remoteTime);
-      if (timeDiff > 1) {
+      
+      // Only sync if difference is significant
+      if (timeDiff > 2) {
         video.currentTime = syncStatus.remoteTime;
+        console.log('Syncing video time:', syncStatus.remoteTime);
       }
 
+      // Sync play/pause state
       if (isPlaying !== syncStatus.remoteIsPlaying) {
-        if (syncStatus.remoteIsPlaying) {
+        if (syncStatus.remoteIsPlaying && video.paused) {
           video.play().catch(console.error);
-        } else {
+          console.log('Remote play triggered');
+        } else if (!syncStatus.remoteIsPlaying && !video.paused) {
           video.pause();
+          console.log('Remote pause triggered');
         }
       }
     }
@@ -232,6 +261,8 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
               src={videoUrl}
               className="w-full h-full object-contain"
               crossOrigin="anonymous"
+              preload="metadata"
+              controls={false}
             />
           )}
           
