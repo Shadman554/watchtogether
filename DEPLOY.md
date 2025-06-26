@@ -40,6 +40,8 @@ For PostgreSQL database support:
 
 The application includes:
 - `railway.json` - Railway-specific configuration
+- `nixpacks.toml` - Nixpacks build configuration
+- `build-railway.js` - Custom build script for Railway deployment
 - `Dockerfile` - Container configuration 
 - Build and start scripts in `package.json`
 
