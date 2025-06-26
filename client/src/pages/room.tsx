@@ -133,126 +133,124 @@ export default function Room({ roomCode }: RoomPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cinema-black via-cinema-dark to-accent-purple/10 relative overflow-hidden">
-      {/* Modern Top Control Bar */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900/20 relative overflow-hidden">
+      {/* Simplified Top Control Bar */}
       {showControls && (
-        <div className="absolute top-4 left-4 right-4 z-50 animate-slide-down">
-          <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                {/* Left Section - Navigation & Room Info */}
-                <div className="flex items-center space-x-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleBackToLobby}
-                    className="text-gray-400 hover:text-white hover:bg-cinema-gray/50 rounded-xl"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </Button>
-                  
-                  <div className="bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 rounded-xl p-3 border border-accent-purple/30">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-sync-green rounded-full animate-pulse"></div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-400">Room:</span>
-                          <span className="font-bold text-accent-purple text-lg tracking-wider">{roomCode}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              navigator.clipboard.writeText(roomCode);
-                              toast({
-                                title: "Room Code Copied",
-                                description: "Share this code with your friend!",
-                              });
-                            }}
-                            className="p-1 h-auto text-gray-400 hover:text-accent-purple rounded-lg"
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
-                        </div>
-                        <span className="text-xs text-gray-500">Connected Users: {connectedUsers.length}/2</span>
+        <div className="absolute top-4 left-4 right-4 z-50">
+          <div className="bg-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              {/* Left Section - Navigation & Room Info */}
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBackToLobby}
+                  className="text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-xl"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+                
+                <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-xl p-3 border border-purple-400/30">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-gray-400">Room:</span>
+                        <span className="font-bold text-purple-400 text-lg tracking-wider">{roomCode}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText(roomCode);
+                            toast({
+                              title: "Room Code Copied",
+                              description: "Share this code with your friend!",
+                            });
+                          }}
+                          className="p-1 h-auto text-gray-400 hover:text-purple-400 rounded-lg"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
                       </div>
+                      <span className="text-xs text-gray-500">Connected Users: {connectedUsers.length}/2</span>
                     </div>
                   </div>
                 </div>
-
-                {/* Center Section - Sync Status */}
-                <SyncStatus syncStatus={syncStatus} />
-
-                {/* Right Section - User Controls */}
-                <div className="flex items-center space-x-2">
-                  {/* Connected Users */}
-                  <div className="flex -space-x-2 mr-3">
-                    {connectedUsers.map((user) => (
-                      <div
-                        key={user.userId}
-                        className={`w-10 h-10 rounded-full border-2 border-cinema-black flex items-center justify-center shadow-lg ${
-                          user.isHost ? 'bg-gradient-to-r from-accent-purple to-accent-blue' : 'bg-gradient-to-r from-accent-blue to-sync-green'
-                        }`}
-                        title={`${user.username} ${user.isHost ? '(Host)' : '(Guest)'}`}
-                      >
-                        <span className="text-sm font-bold text-white">
-                          {user.username.charAt(user.username.length - 1)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Voice Call Button */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleVoiceCall}
-                    className={`rounded-xl transition-all ${
-                      isVoiceCallActive 
-                        ? 'bg-sync-green/20 text-sync-green hover:bg-sync-green/30' 
-                        : 'bg-cinema-gray/50 text-gray-400 hover:bg-accent-purple/20 hover:text-accent-purple'
-                    }`}
-                  >
-                    {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
-                  </Button>
-
-                  {/* Chat Toggle */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowChat(!showChat)}
-                    className={`rounded-xl transition-all ${
-                      showChat 
-                        ? 'bg-accent-blue/20 text-accent-blue hover:bg-accent-blue/30' 
-                        : 'bg-cinema-gray/50 text-gray-400 hover:bg-accent-blue/20 hover:text-accent-blue'
-                    }`}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
-
-                  {/* Settings */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowSidePanel(!showSidePanel)}
-                    className="bg-cinema-gray/50 text-gray-400 hover:bg-gray-600/50 hover:text-white rounded-xl"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-
-                  {/* UI Toggle */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowControls(!showControls)}
-                    className="bg-cinema-gray/50 text-gray-400 hover:bg-warning-orange/20 hover:text-warning-orange rounded-xl"
-                    title="Hide UI"
-                  >
-                    <EyeOff className="w-4 h-4" />
-                  </Button>
-                </div>
               </div>
-            </CardContent>
-          </Card>
+
+              {/* Center Section - Sync Status */}
+              <SyncStatus syncStatus={syncStatus} />
+
+              {/* Right Section - User Controls */}
+              <div className="flex items-center space-x-2">
+                {/* Connected Users */}
+                <div className="flex -space-x-2 mr-3">
+                  {connectedUsers.map((user) => (
+                    <div
+                      key={user.userId}
+                      className={`w-10 h-10 rounded-full border-2 border-black flex items-center justify-center shadow-lg ${
+                        user.isHost ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-green-600'
+                      }`}
+                      title={`${user.username} ${user.isHost ? '(Host)' : '(Guest)'}`}
+                    >
+                      <span className="text-sm font-bold text-white">
+                        {user.username.charAt(user.username.length - 1)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Voice Call Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleVoiceCall}
+                  className={`rounded-xl transition-all ${
+                    isVoiceCallActive 
+                      ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30' 
+                      : 'bg-gray-700/50 text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
+                  }`}
+                >
+                  {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
+                </Button>
+
+                {/* Chat Toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowChat(!showChat)}
+                  className={`rounded-xl transition-all ${
+                    showChat 
+                      ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30' 
+                      : 'bg-gray-700/50 text-gray-400 hover:bg-blue-600/20 hover:text-blue-400'
+                  }`}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </Button>
+
+                {/* Settings */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSidePanel(!showSidePanel)}
+                  className="bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-white rounded-xl"
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+
+                {/* UI Toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowControls(!showControls)}
+                  className="bg-gray-700/50 text-gray-400 hover:bg-orange-600/20 hover:text-orange-400 rounded-xl"
+                  title="Hide UI"
+                >
+                  <EyeOff className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -261,7 +259,7 @@ export default function Room({ roomCode }: RoomPageProps) {
         variant="ghost"
         size="sm"
         onClick={() => setShowControls(!showControls)}
-        className="fixed top-4 right-4 z-[100] bg-accent-purple/80 backdrop-blur-sm hover:bg-accent-purple text-white rounded-full w-12 h-12 p-0 shadow-lg border-2 border-white/20"
+        className="fixed top-4 right-4 z-[100] bg-purple-600/80 backdrop-blur-sm hover:bg-purple-600 text-white rounded-full w-12 h-12 p-0 shadow-lg border-2 border-white/20"
         title={showControls ? "Hide Controls" : "Show Controls"}
       >
         {showControls ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -481,81 +479,79 @@ export default function Room({ roomCode }: RoomPageProps) {
 
       {/* Quick Access Toolbar - Always Visible */}
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[90]">
-        <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl">
-          <CardContent className="p-3">
-            <div className="flex items-center space-x-3">
-              {/* Load Video Button */}
-              <Button
-                onClick={() => setIsUrlInputVisible(true)}
-                className="bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/80 hover:to-accent-purple/80 text-white font-semibold px-4 py-2 rounded-xl"
-              >
-                <Folder className="w-4 h-4 mr-2" />
-                Load Video
-              </Button>
+        <div className="bg-black/90 backdrop-blur-xl border border-gray-700/50 shadow-2xl rounded-2xl p-4">
+          <div className="flex items-center space-x-3">
+            {/* Load Video Button */}
+            <Button
+              onClick={() => setIsUrlInputVisible(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg"
+            >
+              <Folder className="w-4 h-4 mr-2" />
+              Load Video
+            </Button>
 
-              {/* Chat Toggle */}
-              <Button
-                variant="ghost"
-                onClick={() => setShowChat(!showChat)}
-                className={`rounded-xl px-3 py-2 ${
-                  showChat 
-                    ? 'bg-accent-blue/20 text-accent-blue' 
-                    : 'bg-cinema-gray/50 text-gray-400 hover:text-accent-blue'
-                }`}
-              >
-                <MessageCircle className="w-4 h-4" />
-              </Button>
+            {/* Chat Toggle */}
+            <Button
+              variant="ghost"
+              onClick={() => setShowChat(!showChat)}
+              className={`rounded-xl px-4 py-3 ${
+                showChat 
+                  ? 'bg-blue-600/20 text-blue-400 border border-blue-400/30' 
+                  : 'bg-gray-700/50 text-gray-300 hover:text-blue-400 hover:bg-blue-600/10'
+              }`}
+            >
+              <MessageCircle className="w-4 h-4" />
+            </Button>
 
-              {/* Voice Call Toggle */}
-              <Button
-                variant="ghost"
-                onClick={toggleVoiceCall}
-                className={`rounded-xl px-3 py-2 ${
-                  isVoiceCallActive 
-                    ? 'bg-sync-green/20 text-sync-green' 
-                    : 'bg-cinema-gray/50 text-gray-400 hover:text-sync-green'
-                }`}
-              >
-                {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
-              </Button>
+            {/* Voice Call Toggle */}
+            <Button
+              variant="ghost"
+              onClick={toggleVoiceCall}
+              className={`rounded-xl px-4 py-3 ${
+                isVoiceCallActive 
+                  ? 'bg-green-600/20 text-green-400 border border-green-400/30' 
+                  : 'bg-gray-700/50 text-gray-300 hover:text-green-400 hover:bg-green-600/10'
+              }`}
+            >
+              {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
+            </Button>
 
-              {/* Settings Panel Toggle */}
-              <Button
-                variant="ghost"
-                onClick={() => setShowSidePanel(!showSidePanel)}
-                className={`rounded-xl px-3 py-2 ${
-                  showSidePanel 
-                    ? 'bg-warning-orange/20 text-warning-orange' 
-                    : 'bg-cinema-gray/50 text-gray-400 hover:text-warning-orange'
-                }`}
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
+            {/* Settings Panel Toggle */}
+            <Button
+              variant="ghost"
+              onClick={() => setShowSidePanel(!showSidePanel)}
+              className={`rounded-xl px-4 py-3 ${
+                showSidePanel 
+                  ? 'bg-orange-600/20 text-orange-400 border border-orange-400/30' 
+                  : 'bg-gray-700/50 text-gray-300 hover:text-orange-400 hover:bg-orange-600/10'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
 
-              {/* Room Code Display */}
-              <div className="bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 rounded-xl px-4 py-2 border border-accent-purple/30">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs text-gray-400">Room:</span>
-                  <span className="font-bold text-accent-purple text-sm tracking-wider">{roomCode}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(roomCode);
-                      toast({
-                        title: "Room Code Copied",
-                        description: "Share this code with your friend!",
-                      });
-                    }}
-                    className="p-1 h-auto text-gray-400 hover:text-accent-purple rounded-lg"
-                  >
-                    <Copy className="w-3 h-3" />
-                  </Button>
-                </div>
+            {/* Room Code Display */}
+            <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-xl px-4 py-3 border border-purple-400/30">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-400">Room:</span>
+                <span className="font-bold text-purple-400 text-sm tracking-wider">{roomCode}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(roomCode);
+                    toast({
+                      title: "Room Code Copied",
+                      description: "Share this code with your friend!",
+                    });
+                  }}
+                  className="p-1 h-auto text-gray-400 hover:text-purple-400 rounded-lg"
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Voice Call Component */}
