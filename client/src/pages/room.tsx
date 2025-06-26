@@ -112,6 +112,12 @@ export default function Room({ roomCode }: RoomPageProps) {
       const { videoUrl } = event.detail;
       console.log('Received video URL from remote user:', videoUrl);
       setCurrentVideoUrl(videoUrl);
+      
+      // Force a small delay to ensure the state updates
+      setTimeout(() => {
+        console.log('Current video URL updated to:', videoUrl);
+      }, 100);
+      
       toast({
         title: "Video Loaded by Host",
         description: "A new video has been loaded in the room!",

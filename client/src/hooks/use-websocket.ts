@@ -122,6 +122,8 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
             break;
 
           case "playback_control":
+            console.log('Received playback control:', message.payload);
+            
             // Handle remote playback control and update sync status
             setSyncStatus(prev => ({
               ...prev,
@@ -133,6 +135,7 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
             
             // Handle video change - when host loads a new video
             if (message.payload.action === 'video_change' && message.payload.videoId) {
+              console.log('Triggering video URL change event with:', message.payload.videoId);
               // Trigger video URL update for guest
               window.dispatchEvent(new CustomEvent('videoUrlChange', {
                 detail: { videoUrl: message.payload.videoId }

@@ -80,7 +80,7 @@ export interface UserJoinMessage {
 export interface PlaybackControlMessage {
   type: "playback_control";
   payload: {
-    action: "play" | "pause" | "seek";
+    action: "play" | "pause" | "seek" | "video_change";
     currentTime?: number;
     videoId?: string;
   };
