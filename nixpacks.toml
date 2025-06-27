@@ -2,10 +2,10 @@
 nixPkgs = ['nodejs_20', 'npm-9_x']
 
 [phases.install]
-cmd = 'npm ci --omit=dev'
+cmd = 'npm ci'
 
 [phases.build]
-cmd = 'node build-railway.js'
+cmd = 'node build.js'
 
 [start]
 cmd = 'node dist/index.js'

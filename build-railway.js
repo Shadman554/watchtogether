@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawn } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, cpSync, mkdirSync } from 'fs';
 import path from 'path';
 
 function log(message) {
@@ -46,16 +46,26 @@ async function build() {
     log('Building frontend...');
     await runCommand('npx', ['vite', 'build', '--config', 'vite.config.prod.ts'], 180000);
     
+    // Ensure dist directory exists
+    if (!existsSync('dist')) {
+      mkdirSync('dist', { recursive: true });
+    }
+    
+    // Copy shared schema for bundling
+    log('Copying shared modules...');
+    if (existsSync('shared')) {
+      cpSync('shared', 'dist/shared', { recursive: true });
+    }
+    
     log('Building server...');
     await runCommand('npx', [
       'esbuild', 
       'server/index.prod.ts',
       '--platform=node',
-      '--packages=external',
       '--bundle',
       '--format=esm',
-      '--outdir=dist',
-      '--outfile=dist/index.js'
+      '--outfile=dist/index.js',
+      '--packages=external'
     ]);
     
     log('Build completed successfully!');
