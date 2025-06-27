@@ -57,12 +57,18 @@ app.use((req, res, next) => {
   });
 
   // Serve static files in production
-  const publicPath = path.resolve(__dirname, "..", "public");
+  // In Railway, the bundled server is at /app/dist/index.js
+  // and static files are at /app/dist/public/
+  const publicPath = process.env.NODE_ENV === 'production' 
+    ? '/app/dist/public'
+    : path.resolve(__dirname, "public");
+  
   app.use(express.static(publicPath));
 
   // Catch-all handler for SPA routing
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(publicPath, "index.html"));
+    const indexPath = path.resolve(publicPath, "index.html");
+    res.sendFile(indexPath);
   });
 
   // Use PORT environment variable or default to 5000

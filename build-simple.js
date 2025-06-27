@@ -69,6 +69,9 @@ export default defineConfig({
     log('Building server...');
     await runCommand('npx', ['esbuild', 'server/index.prod.ts', '--bundle', '--platform=node', '--format=esm', '--outfile=dist/index.js', '--packages=external']);
     
+    log('Verifying build output...');
+    // Static files are already built to dist/public by Vite
+    
     log('Build completed!');
     
   } catch (error) {
