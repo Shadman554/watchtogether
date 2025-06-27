@@ -53,7 +53,11 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    try {
+      serveStatic(app);
+    } catch (e) {
+      log(`Failed to serve static files: ${e.message}`);
+    }
   }
 
   // ALWAYS serve the app on port 5000
