@@ -1,0 +1,109 @@
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+
+    at ModuleJob._link (node:internal/modules/esm/module_job:130:49)
+
+npm warn config production Use `--omit=dev` instead.
+
+ 
+
+> rest-express@1.0.0 build
+
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+ 
+
+failed to load config from /app/vite.config.ts
+
+error during build:
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@replit/vite-plugin-runtime-error-modal' imported from /app/vite.config.ts.timestamp-1751044003407-c5959219d0ec7.mjs
+
+    at packageResolve (node:internal/modules/esm/resolve:873:9)
+
+    at moduleResolve (node:internal/modules/esm/resolve:946:18)
+
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+
+    at ModuleJob._link (node:internal/modules/esm/module_job:130:49)
+
+npm warn config production Use `--omit=dev` instead.
+
+ 
+
+> rest-express@1.0.0 build
+
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+ 
+
+failed to load config from /app/vite.config.ts
+
+error during build:
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@replit/vite-plugin-runtime-error-modal' imported from /app/vite.config.ts.timestamp-1751044004925-20c5536ccc99e.mjs
+
+    at packageResolve (node:internal/modules/esm/resolve:873:9)
+
+    at moduleResolve (node:internal/modules/esm/resolve:946:18)
+
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+
+    at ModuleJob._link (node:internal/modules/esm/module_job:130:49)
+
+npm warn config production Use `--omit=dev` instead.
+
+ 
+
+> rest-express@1.0.0 build
+
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+ 
+
+failed to load config from /app/vite.config.ts
+
+error during build:
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@replit/vite-plugin-runtime-error-modal' imported from /app/vite.config.ts.timestamp-1751044006540-df5d7cd2e3da3.mjs
+
+    at packageResolve (node:internal/modules/esm/resolve:873:9)
+
+    at moduleResolve (node:internal/modules/esm/resolve:946:18)
+
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+
+    at ModuleJob._link (node:internal/modules/esm/module_job:130:49)
+
+Stopping Container

@@ -1,16 +1,24 @@
 #!/usr/bin/env node
 
-// Railway-specific build script with timeout handling
 import { spawn } from 'child_process';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync } from 'fs';
+import path from 'path';
+
+function log(message) {
+  console.log(`[Railway Build] ${message}`);
+}
 
 function runCommand(command, args, timeout = 300000) { // 5 minute timeout
   return new Promise((resolve, reject) => {
-    console.log(`Running: ${command} ${args.join(' ')}`);
-    const child = spawn(command, args, { stdio: 'inherit' });
+    log(`Running: ${command} ${args.join(' ')}`);
+    
+    const child = spawn(command, args, {
+      stdio: 'inherit',
+      shell: true
+    });
     
     const timer = setTimeout(() => {
-      child.kill('SIGTERM');
+      child.kill('SIGKILL');
       reject(new Error(`Command timed out after ${timeout}ms`));
     }, timeout);
     
@@ -22,25 +30,37 @@ function runCommand(command, args, timeout = 300000) { // 5 minute timeout
         reject(new Error(`Command failed with exit code ${code}`));
       }
     });
+    
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
   });
 }
 
 async function build() {
   try {
-    // Ensure dist directory exists
-    if (!existsSync('dist')) {
-      mkdirSync('dist', { recursive: true });
-    }
-
-    console.log('Building client with Vite...');
-    await runCommand('npx', ['vite', 'build'], 180000); // 3 minute timeout
+    log('Starting Railway build process...');
     
-    console.log('Building server with esbuild...');
-    await runCommand('npx', ['esbuild', 'server/index.prod.ts', '--platform=node', '--packages=external', '--bundle', '--format=esm', '--outfile=dist/index.js', '--target=node20'], 60000); // 1 minute timeout
+    // Build frontend with production config
+    log('Building frontend...');
+    await runCommand('npx', ['vite', 'build', '--config', 'vite.config.prod.ts'], 180000);
     
-    console.log('Railway build completed successfully!');
+    log('Building server...');
+    await runCommand('npx', [
+      'esbuild', 
+      'server/index.prod.ts',
+      '--platform=node',
+      '--packages=external',
+      '--bundle',
+      '--format=esm',
+      '--outdir=dist',
+      '--outfile=dist/index.js'
+    ]);
+    
+    log('Build completed successfully!');
   } catch (error) {
-    console.error('Railway build failed:', error.message);
+    log(`Build failed: ${error.message}`);
     process.exit(1);
   }
 }

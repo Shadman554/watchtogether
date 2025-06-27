@@ -1,17 +1,14 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function log(message: string, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-
-  console.log(`${formattedTime} [${source}] ${message}`);
+  const timestamp = new Date().toLocaleTimeString();
+  console.log(`${timestamp} [${source}] ${message}`);
 }
 
 const app = express();
@@ -59,26 +56,17 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // Production mode - serve static files
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // Serve static files in production
+  const publicPath = path.resolve(__dirname, "..", "public");
+  app.use(express.static(publicPath));
 
-  if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
-  }
-
-  app.use(express.static(distPath));
-
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  // Catch-all handler for SPA routing
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(publicPath, "index.html"));
   });
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Use PORT environment variable or default to 5000
+  const port = parseInt(process.env.PORT || "5000", 10);
   server.listen({
     port,
     host: "0.0.0.0",
