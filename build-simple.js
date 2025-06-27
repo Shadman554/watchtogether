@@ -1,17 +1,14 @@
 #!/usr/bin/env node
 
 import { spawn } from 'child_process';
-import { existsSync, writeFileSync } from 'fs';
-import path from 'path';
+import { writeFileSync } from 'fs';
 
 function log(message) {
-  console.log(`[Build] ${message}`);
+  console.log(`[Simple Build] ${message}`);
 }
 
-function runCommand(command, args, timeout = 300000) {
+function runCommand(command, args, timeout = 180000) {
   return new Promise((resolve, reject) => {
-    log(`Running: ${command} ${args.join(' ')}`);
-    
     const child = spawn(command, args, {
       stdio: 'inherit',
       shell: true
@@ -40,10 +37,10 @@ function runCommand(command, args, timeout = 300000) {
 
 async function build() {
   try {
-    log('Starting build process...');
+    log('Starting Railway build...');
     
-    // Create optimized Vite config for production build
-    const productionViteConfig = `
+    // Simple Vite config without chunking
+    const simpleConfig = `
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -60,46 +57,19 @@ export default defineConfig({
   root: path.resolve(process.cwd(), "client"),
   build: {
     outDir: path.resolve(process.cwd(), "dist/public"),
-    emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom']
-        }
-      }
-    }
+    emptyOutDir: true
   }
 });`;
 
-    writeFileSync('vite.config.temp.js', productionViteConfig);
+    writeFileSync('vite.build.js', simpleConfig);
     
-    // Build frontend
     log('Building frontend...');
-    await runCommand('npx', ['vite', 'build', '--config', 'vite.config.temp.js'], 180000);
+    await runCommand('npx', ['vite', 'build', '--config', 'vite.build.js']);
     
-    // Create bundled server
     log('Building server...');
-    await runCommand('npx', [
-      'esbuild',
-      'server/index.prod.ts',
-      '--bundle',
-      '--platform=node',
-      '--format=esm',
-      '--outfile=dist/index.js',
-      '--external:@neondatabase/serverless',
-      '--external:drizzle-orm',
-      '--external:ws',
-      '--external:express',
-      '--external:nanoid',
-      '--external:zod'
-    ]);
+    await runCommand('npx', ['esbuild', 'server/index.prod.ts', '--bundle', '--platform=node', '--format=esm', '--outfile=dist/index.js', '--packages=external']);
     
-    log('Build completed successfully!');
-    
-    // Cleanup
-    if (existsSync('vite.config.temp.js')) {
-      await runCommand('rm', ['vite.config.temp.js']);
-    }
+    log('Build completed!');
     
   } catch (error) {
     log(`Build failed: ${error.message}`);

@@ -5,7 +5,7 @@ nixPkgs = ['nodejs_20', 'npm-9_x']
 cmd = 'npm ci'
 
 [phases.build]
-cmd = 'node build.js'
+cmd = 'node build-simple.js'
 
 [start]
 cmd = 'node dist/index.js'
