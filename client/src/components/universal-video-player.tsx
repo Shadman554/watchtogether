@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize, Settings, Film, Loader2, Wifi, WifiOff, Zap } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize, Settings, Film, Loader2, Wifi, WifiOff, Zap, RotateCcw, RotateCw } from "lucide-react";
 
 interface UniversalVideoPlayerProps {
   videoUrl: string;
@@ -16,6 +16,7 @@ interface UniversalVideoPlayerProps {
 }
 
 export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackControl, syncStatus }: UniversalVideoPlayerProps) {
+  console.log('UniversalVideoPlayer received videoUrl:', videoUrl);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -24,6 +25,8 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
   const [showControls, setShowControls] = useState(true);
   const [syncMode, setSyncMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [extractedVideoUrl, setExtractedVideoUrl] = useState<string | null>(null);
+  const [extractionStatus, setExtractionStatus] = useState<'idle' | 'extracting' | 'success' | 'failed'>('idle');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -45,9 +48,10 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
       return 'direct';
     }
     
-    // Streaming platforms (beenar.net, etc.)
+    // Streaming platforms (beenar.net, yourupload, myflixerz, etc.)
     if (url.includes('beenar.net') || url.includes('streamtape.com') || url.includes('mixdrop.co') || 
-        url.includes('doodstream.com') || url.includes('upstream.to') || url.includes('fembed.com')) {
+        url.includes('doodstream.com') || url.includes('upstream.to') || url.includes('fembed.com') ||
+        url.includes('yourupload.com') || url.includes('myflixerz.to')) {
       return 'iframe';
     }
     
@@ -57,25 +61,138 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
 
   const videoType = getVideoType(videoUrl);
 
+  // Extract direct video URL from streaming sites
+  const extractDirectVideoUrl = async (embedUrl: string): Promise<string | null> => {
+    try {
+      setExtractionStatus('extracting');
+      
+      if (embedUrl.includes('yourupload.com')) {
+        // Extract yourupload video ID and construct direct URL
+        const videoId = embedUrl.match(/embed\/([^?\/]+)/)?.[1];
+        if (videoId) {
+          try {
+            const proxyUrl = `/api/extract-video?url=${encodeURIComponent(embedUrl)}`;
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
+            
+            if (data.videoUrl) {
+              setExtractionStatus('success');
+              return data.videoUrl;
+            }
+          } catch (e) {
+            console.log('Proxy extraction failed');
+          }
+        }
+      }
+      
+      if (embedUrl.includes('myflixerz.to')) {
+        // Try multiple extraction methods for myflixerz
+        try {
+          console.log('Attempting myflixerz extraction...');
+          
+          // Method 1: Direct HTML extraction
+          const extractUrl = `/api/extract-video?url=${encodeURIComponent(embedUrl)}`;
+          const response = await fetch(extractUrl);
+          const data = await response.json();
+          
+          if (data.success && data.videoUrl) {
+            console.log('HTML extraction successful:', data.videoUrl);
+            setExtractionStatus('success');
+            return data.videoUrl;
+          }
+          
+          // Method 2: Try common myflixerz embed patterns
+          const movieId = embedUrl.match(/watch-movie\/[^\/]+-(\d+)\./)?.[1];
+          if (movieId) {
+            const embedPatterns = [
+              `https://myflixerz.to/ajax/embed/episode/${movieId}/servers`,
+              `https://myflixerz.to/ajax/v2/episode/servers/${movieId}`,
+              `https://myflixerz.to/embed/movie/${movieId}`,
+              `https://myflixerz.to/v2/embed/movie/${movieId}`
+            ];
+            
+            for (const pattern of embedPatterns) {
+              try {
+                const patternResponse = await fetch(`/api/extract-video?url=${encodeURIComponent(pattern)}`);
+                const patternData = await patternResponse.json();
+                
+                if (patternData.success && patternData.videoUrl) {
+                  console.log('Pattern extraction successful:', patternData.videoUrl);
+                  setExtractionStatus('success');
+                  return patternData.videoUrl;
+                }
+              } catch (e) {
+                continue;
+              }
+            }
+          }
+          
+          console.log('All myflixerz extraction methods failed');
+        } catch (e) {
+          console.log('Myflixerz extraction error:', e);
+        }
+      }
+      
+      setExtractionStatus('failed');
+      return null;
+      
+    } catch (e) {
+      console.log('Could not extract direct URL:', e);
+      setExtractionStatus('failed');
+      return null;
+    }
+  };
+
+  // Attempt to extract direct video URL for iframe videos 
+  useEffect(() => {
+    if (videoType === 'iframe' && videoUrl && extractionStatus === 'idle') {
+      // Enable extraction for supported sites
+      extractDirectVideoUrl(videoUrl).then(directUrl => {
+        if (directUrl) {
+          setExtractedVideoUrl(directUrl);
+          setExtractionStatus('success');
+        } else {
+          setExtractionStatus('failed');
+        }
+      });
+    }
+  }, [videoUrl, videoType, extractionStatus]);
+
+  // Use extracted URL if available, otherwise fall back to original
+  const effectiveVideoUrl = extractedVideoUrl || videoUrl;
+  const effectiveVideoType = (extractedVideoUrl && extractionStatus === 'success') ? 'direct' : videoType;
+
+  // Reset extraction status when videoUrl changes
+  useEffect(() => {
+    if (videoUrl) {
+      setExtractedVideoUrl(null);
+      setExtractionStatus('idle');
+    }
+  }, [videoUrl]);
+
+
+
   // Control visibility
   const showControlsTemporarily = () => {
     setShowControls(true);
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
     }
+    // Keep controls visible longer on mobile (5 seconds vs 3 seconds)
+    const timeout = window.innerWidth <= 768 ? 5000 : 3000;
     controlsTimeoutRef.current = window.setTimeout(() => {
       setShowControls(false);
-    }, 3000);
+    }, timeout);
   };
 
   const handleMouseMove = () => {
     showControlsTemporarily();
   };
 
-  // Direct video controls
+  // Direct video controls (including extracted iframe videos)
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || videoType !== 'direct') return;
+    if (!video || effectiveVideoType !== 'direct') return;
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
@@ -122,9 +239,29 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     };
   }, [videoUrl, videoType, syncMode, onSync, onPlaybackControl, syncStatus.remoteTime]);
 
+  // Enhanced heartbeat sync system and iframe video detection
+  useEffect(() => {
+    if (!videoUrl || !syncMode) return;
+    
+    if (effectiveVideoType === 'iframe' || effectiveVideoType === 'youtube') {
+      // For iframe videos, manually update time when playing
+      const interval = setInterval(() => {
+        if (isPlaying) {
+          setCurrentTime(prev => prev + 1);
+          // Set a default duration for iframe videos if not available
+          if (duration === 0) {
+            setDuration(7200); // 2 hours default
+          }
+        }
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [effectiveVideoType, isPlaying, videoUrl, syncMode, duration]);
+
   // Enhanced heartbeat sync system - sends sync updates every 1.5 seconds
   useEffect(() => {
-    if (!syncMode || videoType !== 'direct') return;
+    if (!syncMode) return;
 
     if (syncIntervalRef.current) {
       clearInterval(syncIntervalRef.current);
@@ -174,12 +311,40 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
 
   const handlePlay = () => {
     const video = videoRef.current;
-    if (!video || videoType !== 'direct') return;
+    const iframe = iframeRef.current;
     
-    if (isPlaying) {
-      video.pause();
-    } else {
-      video.play().catch(console.error);
+    if (videoType === 'direct' && video) {
+      if (isPlaying) {
+        video.pause();
+      } else {
+        video.play().catch(console.error);
+      }
+    } else if (effectiveVideoType === 'iframe') {
+      // For iframe videos, provide user feedback and sync state
+      const newPlayingState = !isPlaying;
+      setIsPlaying(newPlayingState);
+      
+      // Try to control iframe (likely won't work due to CORS)
+      if (iframe && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.postMessage({
+            action: newPlayingState ? 'play' : 'pause',
+            currentTime: currentTime
+          }, '*');
+        } catch (e) {
+          // Expected to fail for most streaming sites
+        }
+      }
+      
+      if (syncMode) {
+        onPlaybackControl(newPlayingState ? "play" : "pause", currentTime, videoUrl);
+      }
+    } else if (videoType === 'youtube') {
+      // For YouTube, try YouTube API control
+      setIsPlaying(!isPlaying);
+      if (syncMode) {
+        onPlaybackControl(isPlaying ? "pause" : "play", currentTime, videoUrl);
+      }
     }
   };
 
@@ -187,11 +352,14 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     const newTime = values[0];
     setCurrentTime(newTime);
     const video = videoRef.current;
+    
     if (video && videoType === 'direct') {
       video.currentTime = newTime;
-      if (syncMode) {
-        onPlaybackControl("seek", newTime, videoUrl);
-      }
+    }
+    
+    // Always send sync for seeking regardless of video type
+    if (syncMode) {
+      onPlaybackControl("seek", newTime, videoUrl);
     }
   };
 
@@ -202,27 +370,33 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     if (video && videoType === 'direct') {
       video.volume = newVolume / 100;
     }
+    // For iframe videos, we can't control volume directly, but we still update the UI
   };
 
   const handleMute = () => {
     const video = videoRef.current;
-    if (!video || videoType !== 'direct') return;
     
-    if (isMuted) {
-      video.muted = false;
-      setIsMuted(false);
+    if (video && videoType === 'direct') {
+      if (isMuted) {
+        video.muted = false;
+        setIsMuted(false);
+      } else {
+        video.muted = true;
+        setIsMuted(true);
+      }
     } else {
-      video.muted = true;
-      setIsMuted(true);
+      // For iframe videos, just toggle the UI state
+      setIsMuted(!isMuted);
     }
   };
 
   const handleFullscreen = () => {
-    if (playerContainerRef.current) {
+    const container = playerContainerRef.current;
+    if (container) {
       if (document.fullscreenElement) {
-        document.exitFullscreen();
+        document.exitFullscreen().catch(console.error);
       } else {
-        playerContainerRef.current.requestFullscreen();
+        container.requestFullscreen().catch(console.error);
       }
     }
   };
@@ -233,18 +407,7 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Show placeholder if no video
-  if (!videoUrl) {
-    return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center">
-          <Film className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-400 mb-2">No Video Loaded</h3>
-          <p className="text-gray-500">Use the Library button to load a video from any streaming site</p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div 
@@ -252,6 +415,8 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
       className="absolute inset-0 flex items-center justify-center cursor-none"
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setShowControls(false)}
+      onClick={showControlsTemporarily}
+      onTouchStart={showControlsTemporarily}
     >
       <div className="relative w-full h-full max-w-7xl max-h-full">
         {/* Premium Video Player Container */}
@@ -276,36 +441,67 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
             </div>
           ) : (
             <>
-              {videoType === 'direct' && (
-                <video
-                  ref={videoRef}
-                  src={videoUrl}
-                  className="w-full h-full object-contain"
-                  crossOrigin="anonymous"
-                  preload="metadata"
-                  controls={false}
-                />
+              {effectiveVideoType === 'direct' && (
+                <>
+                  <video
+                    ref={videoRef}
+                    src={effectiveVideoUrl}
+                    className="w-full h-full object-contain video-element-landscape"
+                    crossOrigin="anonymous"
+                    preload="metadata"
+                    controls={false}
+                  />
+                  {extractionStatus === 'success' && extractedVideoUrl && (
+                    <div className="absolute top-4 left-4 bg-green-600/80 backdrop-blur-sm rounded-lg px-3 py-2 z-10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-white">🎯 Iframe bypassed!</span>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
               
-              {videoType === 'youtube' && (
+              {effectiveVideoType === 'youtube' && (
                 <iframe
                   ref={iframeRef}
-                  src={`https://www.youtube.com/embed/${extractYouTubeId(videoUrl)}?autoplay=0&controls=0&disablekb=1&fs=0&modestbranding=1&playsinline=1&rel=0`}
-                  className="w-full h-full"
+                  src={`https://www.youtube.com/embed/${extractYouTubeId(videoUrl)}?autoplay=0&controls=0&enablejsapi=1&playsinline=1&rel=0&origin=${window.location.origin}`}
+                  className="w-full h-full video-element-landscape"
                   frameBorder="0"
                   allowFullScreen
+                  allow="autoplay; encrypted-media"
                 />
               )}
               
               {videoType === 'iframe' && (
-                <iframe
-                  ref={iframeRef}
-                  src={videoUrl}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allowFullScreen
-                  sandbox="allow-scripts allow-same-origin allow-presentation"
-                />
+                <div className="relative w-full h-full">
+                  <iframe
+                    ref={iframeRef}
+                    src={videoUrl}
+                    className="w-full h-full video-element-landscape"
+                    frameBorder="0"
+                    allowFullScreen
+                    allow="autoplay; encrypted-media; fullscreen; clipboard-read; clipboard-write"
+                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-top-navigation allow-pointer-lock"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    style={{ display: 'block', width: '100%', height: '100%' }}
+                    onLoad={() => console.log('Iframe loaded successfully')}
+                    onError={(e) => console.error('Iframe failed to load:', e)}
+                  />
+                  
+
+                  
+
+                  
+                  {/* Invisible overlay for iframe interaction */}
+                  <div 
+                    className="absolute inset-0"
+                    style={{ 
+                      pointerEvents: showControls ? 'none' : 'auto',
+                      zIndex: showControls ? -1 : 1
+                    }}
+                  />
+                </div>
               )}
             </>
           )}
@@ -326,270 +522,11 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
           </div>
         )}
 
-        {/* Connection Status Indicator - Mobile Responsive */}
-        {videoUrl && (
-          <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10">
-            <div className={`glass rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-2 border ${
-              syncStatus.isSync 
-                ? 'border-green-500/30 bg-green-500/10' 
-                : 'border-red-500/30 bg-red-500/10'
-            }`}>
-              <div className="flex items-center space-x-1 md:space-x-2">
-                {syncStatus.isSync ? (
-                  <Wifi className="w-3 h-3 md:w-4 md:h-4 text-green-400" />
-                ) : (
-                  <WifiOff className="w-3 h-3 md:w-4 md:h-4 text-red-400" />
-                )}
-                <span className={`text-xs font-medium ${
-                  syncStatus.isSync ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {syncStatus.isSync ? 'Synced' : 'Offline'}
-                </span>
-                {syncStatus.isSync && (
-                  <span className="text-xs text-gray-400 hidden md:inline">±{syncStatus.latency}ms</span>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Premium Video Controls - Mobile Responsive */}
-        {videoType === 'direct' && videoUrl && (
-          <div 
-            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-3 md:p-6 transition-all duration-500 ${
-              showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            {/* Enhanced Progress Bar - Mobile Responsive */}
-            <div className="mb-3 md:mb-6">
-              <div className="flex items-center justify-between text-xs md:text-sm text-gray-200 mb-2 md:mb-3">
-                <div className="flex items-center space-x-1 md:space-x-2">
-                  <span className="font-mono text-xs md:text-sm">{formatTime(currentTime)}</span>
-                  {syncMode && (
-                    <div className="flex items-center space-x-1">
-                      <Zap className="w-2 h-2 md:w-3 md:h-3 text-purple-400" />
-                      <span className="text-xs text-purple-400 hidden md:inline">Sync</span>
-                    </div>
-                  )}
-                </div>
-                <span className="font-mono text-xs md:text-sm">{formatTime(duration)}</span>
-              </div>
-              <div className="relative group">
-                <Slider
-                  value={[currentTime]}
-                  max={duration}
-                  step={1}
-                  onValueChange={handleSeek}
-                  className="w-full [&_.bg-purple-600]:bg-gradient-to-r [&_.bg-purple-600]:from-purple-500 [&_.bg-purple-600]:to-blue-500"
-                />
-                {/* Enhanced Sync indicators */}
-                {syncMode && syncStatus.remoteTime > 0 && (
-                  <div 
-                    className="absolute top-0 h-3 w-1 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-lg animate-pulse group-hover:animate-bounce" 
-                    style={{ left: `${(syncStatus.remoteTime / duration) * 100}%` }}
-                    title="Friend's position"
-                  >
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      Friend
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            {/* Premium Control Buttons - Mobile Responsive */}
-            <div className="block md:hidden">
-              {/* Mobile Layout - Compact Controls */}
-              <div className="flex items-center justify-center space-x-4 mb-3">
-                {/* Main play/pause - prominent */}
-                <Button
-                  onClick={handlePlay}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-400 hover:to-blue-400 rounded-full w-12 h-12 p-0 shadow-xl"
-                >
-                  {isPlaying ? (
-                    <Pause className="w-6 h-6" />
-                  ) : (
-                    <Play className="w-6 h-6 ml-0.5" />
-                  )}
-                </Button>
-                
-                {/* Skip controls */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSeek([Math.max(0, currentTime - 10)])}
-                  className="text-white hover:text-purple-400 hover:bg-purple-500/20 rounded-xl p-2"
-                >
-                  <SkipBack className="w-4 h-4" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSeek([Math.min(duration, currentTime + 10)])}
-                  className="text-white hover:text-purple-400 hover:bg-purple-500/20 rounded-xl p-2"
-                >
-                  <SkipForward className="w-4 h-4" />
-                </Button>
-                
-                {/* Volume */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleMute}
-                  className="text-white hover:text-accent-blue rounded-xl p-2"
-                >
-                  {isMuted || volume === 0 ? (
-                    <VolumeX className="w-4 h-4" />
-                  ) : (
-                    <Volume2 className="w-4 h-4" />
-                  )}
-                </Button>
-                
-                {/* Fullscreen */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleFullscreen}
-                  className="text-white hover:text-accent-purple rounded-xl p-2"
-                >
-                  <Maximize className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              {/* Mobile Sync Toggle */}
-              <div className="flex items-center justify-center">
-                <div className="flex items-center space-x-2 bg-cinema-dark/80 backdrop-blur-sm rounded-full px-3 py-1">
-                  <div className={`w-2 h-2 rounded-full ${syncMode ? 'bg-sync-green' : 'bg-gray-500'}`} />
-                  <span className="text-xs font-medium text-white">Sync</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSyncMode(!syncMode)}
-                    className="w-8 h-4 p-0"
-                  >
-                    <div className={`w-full h-full rounded-full transition-colors ${
-                      syncMode ? 'bg-sync-green' : 'bg-gray-500'
-                    }`}>
-                      <div className={`w-3 h-3 bg-white rounded-full transition-transform ${
-                        syncMode ? 'translate-x-4' : 'translate-x-0.5'
-                      }`} />
-                    </div>
-                  </Button>
-                </div>
-              </div>
-            </div>
+        {/* Clean Fullscreen Video - No Controls */}
 
-            {/* Desktop Layout - Full Controls */}
-            <div className="hidden md:flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                {/* Skip back */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSeek([Math.max(0, currentTime - 10)])}
-                  className="text-white hover:text-purple-400 hover:bg-purple-500/20 rounded-xl p-3 transition-all duration-300 hover:scale-105"
-                >
-                  <SkipBack className="w-5 h-5" />
-                </Button>
-                
-                {/* Main play/pause */}
-                <Button
-                  onClick={handlePlay}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-400 hover:to-blue-400 rounded-full w-14 h-14 p-0 shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-300 hover:scale-110 group"
-                >
-                  {isPlaying ? (
-                    <Pause className="w-7 h-7 group-hover:scale-110 transition-transform" />
-                  ) : (
-                    <Play className="w-7 h-7 ml-1 group-hover:scale-110 transition-transform" />
-                  )}
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSeek([Math.min(duration, currentTime + 10)])}
-                  className="text-white hover:text-accent-purple rounded-xl p-3 transition-all duration-300 hover:scale-105"
-                >
-                  <SkipForward className="w-5 h-5" />
-                </Button>
 
-                {/* Volume Control */}
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleMute}
-                    className="text-white hover:text-accent-blue"
-                  >
-                    {isMuted || volume === 0 ? (
-                      <VolumeX className="w-4 h-4" />
-                    ) : (
-                      <Volume2 className="w-4 h-4" />
-                    )}
-                  </Button>
-                  <div className="w-20">
-                    <Slider
-                      value={[volume]}
-                      max={100}
-                      step={1}
-                      onValueChange={handleVolumeChange}
-                    />
-                  </div>
-                </div>
-
-                {/* Sync Controls */}
-                <div className="flex items-center space-x-2 bg-cinema-dark/80 backdrop-blur-sm rounded-full px-3 py-1">
-                  <div className={`w-2 h-2 rounded-full ${syncMode ? 'bg-sync-green' : 'bg-gray-500'}`} />
-                  <span className="text-xs font-medium">Sync Mode</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSyncMode(!syncMode)}
-                    className="w-8 h-4 p-0"
-                  >
-                    <div className={`w-full h-full rounded-full transition-colors ${
-                      syncMode ? 'bg-sync-green' : 'bg-gray-500'
-                    }`}>
-                      <div className={`w-3 h-3 bg-white rounded-full transition-transform ${
-                        syncMode ? 'translate-x-4' : 'translate-x-0.5'
-                      }`} />
-                    </div>
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:text-gray-300"
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleFullscreen}
-                  className="text-white hover:text-accent-purple"
-                >
-                  <Maximize className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Universal sync status for all video types */}
-        <div className="absolute top-4 right-4 bg-cinema-dark/80 backdrop-blur-sm rounded-full px-3 py-2">
-          <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${syncMode ? 'bg-sync-green animate-pulse' : 'bg-gray-500'}`} />
-            <span className="text-xs font-medium text-white">
-              {videoType === 'iframe' ? 'Embedded Player' : 'Native Player'}
-            </span>
-          </div>
-        </div>
       </div>
     </div>
   );

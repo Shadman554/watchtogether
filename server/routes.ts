@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import fetch from "node-fetch";
 import { storage } from "./storage";
 import { insertRoomSchema, insertMessageSchema } from "@shared/schema";
 import type { WebSocketMessage, SyncMessage, ChatMessage, UserJoinMessage, PlaybackControlMessage } from "@shared/schema";
@@ -28,6 +29,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function generateUserId(): string {
     return Math.random().toString(36).substring(2, 15);
   }
+
+  // Proxy endpoint for bypassing CORS and iframe restrictions
+  app.get('/api/proxy-video', async (req, res) => {
+    try {
+      const { url } = req.query;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'URL parameter is required' });
+      }
+
+      console.log('Proxying video URL:', url);
+      
+      // Fetch the video with our server's headers
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': '*/*',
+          'Accept-Encoding': 'identity',
+          'Range': req.headers.range || 'bytes=0-',
+          'Referer': 'https://myflixerz.to/',
+          'Origin': 'https://myflixerz.to',
+        }
+      });
+
+      // Set appropriate headers for video streaming
+      res.set({
+        'Content-Type': response.headers.get('content-type') || 'video/mp4',
+        'Accept-Ranges': 'bytes',
+        'Content-Length': response.headers.get('content-length'),
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      });
+
+      // Stream the video content
+      response.body?.pipe(res);
+      
+    } catch (error) {
+      console.error('Proxy error:', error);
+      res.status(500).json({ error: 'Proxy failed' });
+    }
+  });
+
+  // Video URL extraction endpoint for bypassing iframe restrictions  
+  app.get('/api/extract-video', async (req, res) => {
+    try {
+      const { url } = req.query;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'URL parameter is required' });
+      }
+      
+      console.log('Extracting video URL from:', url);
+      
+      // Extract video URL from streaming sites
+      if (url.includes('myflixerz.to')) {
+        try {
+          // Enhanced extraction with better headers and techniques
+          const response = await fetch(url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+              'Accept-Language': 'en-US,en;q=0.9',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+              'Sec-Ch-Ua-Mobile': '?0',
+              'Sec-Ch-Ua-Platform': '"Windows"',
+              'Sec-Fetch-Dest': 'document',
+              'Sec-Fetch-Mode': 'navigate',
+              'Sec-Fetch-Site': 'none',
+              'Sec-Fetch-User': '?1',
+              'Upgrade-Insecure-Requests': '1',
+              'Referer': 'https://myflixerz.to/',
+              'Connection': 'keep-alive'
+            }
+          });
+          
+          const html = await response.text();
+          console.log('Fetched myflixerz page, analyzing with advanced patterns...');
+          
+          // Enhanced patterns for modern streaming sites
+          const videoPatterns = [
+            // Common video source patterns
+            /<source[^>]+src=["']([^"']+\.(mp4|m3u8|webm)[^"']*)/gi,
+            /<video[^>]+src=["']([^"']+\.(mp4|m3u8|webm)[^"']*)/gi,
+            
+            // JavaScript variable patterns
+            /(?:file|source|src|url)["']?\s*[:=]\s*["']([^"']+\.(mp4|m3u8|webm)[^"']*)/gi,
+            /(?:video_url|videoUrl|video-url)["']?\s*[:=]\s*["']([^"']+)/gi,
+            
+            // JSON patterns
+            /"(?:file|source|src|url)":\s*"([^"]+\.(mp4|m3u8|webm)[^"]*)"/gi,
+            /"sources":\s*\[.*?"src":\s*"([^"]+\.(mp4|m3u8|webm)[^"]*)"/gi,
+            
+            // URL patterns in JavaScript
+            /https?:\/\/[^"'\s]+\.(mp4|m3u8|webm)(?:\?[^"'\s]*)?/gi,
+            
+            // Streaming service patterns
+            /embed[^"']*\/([a-zA-Z0-9]+)/gi,
+            /player[^"']*\/([a-zA-Z0-9]+)/gi
+          ];
+          
+          const foundUrls = new Set();
+          
+          for (const pattern of videoPatterns) {
+            let match;
+            while ((match = pattern.exec(html)) !== null) {
+              const potentialUrl = match[1] || match[0];
+              if (potentialUrl && (
+                potentialUrl.includes('.mp4') || 
+                potentialUrl.includes('.m3u8') ||
+                potentialUrl.includes('.webm') ||
+                potentialUrl.includes('video') ||
+                potentialUrl.includes('stream')
+              )) {
+                const cleanUrl = potentialUrl.startsWith('http') ? potentialUrl : 
+                               potentialUrl.startsWith('//') ? `https:${potentialUrl}` :
+                               `https://${potentialUrl}`;
+                foundUrls.add(cleanUrl);
+              }
+            }
+          }
+          
+          if (foundUrls.size > 0) {
+            const videoUrl = Array.from(foundUrls)[0];
+            console.log('Found video URL:', videoUrl);
+            return res.json({ 
+              success: true, 
+              videoUrl 
+            });
+          }
+          
+          // Try to find iframe embed sources as fallback
+          const iframePattern = /<iframe[^>]+src=["']([^"']+)["'][^>]*>/gi;
+          let iframeMatch;
+          while ((iframeMatch = iframePattern.exec(html)) !== null) {
+            const iframeSrc = iframeMatch[1];
+            if (iframeSrc && !iframeSrc.includes('youtube') && !iframeSrc.includes('ads')) {
+              console.log('Found iframe source for further extraction:', iframeSrc);
+              // Recursively try to extract from iframe source
+              try {
+                const nestedResponse = await fetch(`/api/extract-video?url=${encodeURIComponent(iframeSrc)}`);
+                const nestedData = await nestedResponse.json();
+                if (nestedData.success) {
+                  return res.json(nestedData);
+                }
+              } catch (e) {
+                console.log('Nested extraction failed');
+              }
+            }
+          }
+          
+          console.log('No extractable video URLs found in myflixerz page');
+        } catch (e) {
+          console.error('MyFlixerz extraction error:', e);
+        }
+      }
+      
+      if (url.includes('yourupload.com')) {
+        const videoId = url.match(/embed\/([^?\/]+)/)?.[1];
+        if (videoId) {
+          console.log('YouUpload extraction currently disabled - using iframe fallback');
+        }
+      }
+      
+      console.log('Could not extract direct video URL');
+      res.json({ success: false, error: 'Could not extract direct video URL' });
+      
+    } catch (error) {
+      console.error('Video extraction error:', error);
+      res.status(500).json({ error: 'Internal server error during video extraction' });
+    }
+  });
 
   // Broadcast to all clients in a room
   function broadcastToRoom(roomCode: string, message: WebSocketMessage, excludeClient?: WebSocketClient) {

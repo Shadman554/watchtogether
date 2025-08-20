@@ -175,6 +175,82 @@ body {
   min-height: 100vh;
 }
 
+/* Mobile landscape orientation fixes */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  /* Ensure full viewport usage in landscape */
+  html, body {
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  
+  #root {
+    height: 100vh;
+    min-height: 100vh;
+  }
+  
+  /* Make room page fullscreen in landscape */
+  .room-container {
+    height: 100vh !important;
+    padding: 0 !important;
+  }
+  
+  /* Video player takes full screen in landscape */
+  .video-container-landscape {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 50 !important;
+    background: black !important;
+  }
+  
+  /* Header in landscape - make it overlay and translucent */
+  .header-landscape {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 60 !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 8px 16px !important;
+    height: auto !important;
+  }
+  
+  /* Hide panels in landscape for clean viewing */
+  .side-panel-landscape,
+  .chat-panel-landscape {
+    display: none !important;
+  }
+  
+  /* Bottom controls in landscape */
+  .bottom-controls-landscape {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 60 !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 8px 16px !important;
+  }
+  
+  /* Video controls positioned above bottom toolbar in landscape */
+  .video-container-landscape .video-controls {
+    bottom: 60px !important;
+    z-index: 55 !important;
+  }
+  
+  /* Video iframe/element fills container in landscape */
+  .video-element-landscape {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+}
+
 /* Mobile viewport fix */
 @supports (-webkit-touch-callout: none) {
   .min-h-screen {

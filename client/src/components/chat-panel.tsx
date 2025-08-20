@@ -23,7 +23,7 @@ interface ChatPanelProps {
   currentUserId: string;
 }
 
-const EMOJI_REACTIONS = ["❤️", "😂", "😮", "😭", "🔥"];
+const EMOJI_REACTIONS = ["❤️", "😂", "😮", "😭", "🔥", "💯", "😍", "😎", "🤔", "😱", "🥰", "😤", "🎉", "👍", "👎"];
 
 export default function ChatPanel({ isVisible, messages, onSendMessage, onClose, currentUserId }: ChatPanelProps) {
   const [messageInput, setMessageInput] = useState("");
@@ -135,8 +135,10 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
 
                   if (isEmoji) {
                     return (
-                      <div key={message.id || index} className="text-center">
-                        <span className="text-3xl animate-scale-in">{message.content}</span>
+                      <div key={message.id || index} className="flex justify-start">
+                        <div className="bg-slate-800/60 rounded-full px-3 py-2 border border-slate-700/50">
+                          <span className="text-2xl animate-scale-in">{message.content}</span>
+                        </div>
                       </div>
                     );
                   }

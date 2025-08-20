@@ -23,6 +23,13 @@ export default function Room({ roomCode }: RoomPageProps) {
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState("");
   const [isUrlInputVisible, setIsUrlInputVisible] = useState(false);
+  
+  // Auto-close URL input dialog when video is loaded
+  useEffect(() => {
+    if (currentVideoUrl) {
+      setIsUrlInputVisible(false);
+    }
+  }, [currentVideoUrl]);
   const [showSidePanel, setShowSidePanel] = useState(false);
   const { toast } = useToast();
 
@@ -84,7 +91,7 @@ export default function Room({ roomCode }: RoomPageProps) {
 
     handleVideoLoad(videoUrl.trim());
     setVideoUrl("");
-    setIsUrlInputVisible(false);
+    setIsUrlInputVisible(false); // Close the dialog
     toast({
       title: "Video Loaded",
       description: "Video loaded successfully!",
@@ -326,9 +333,9 @@ export default function Room({ roomCode }: RoomPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden room-container">
       {/* Premium Header Bar - Mobile Responsive */}
-      <div className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-purple-500/20">
+      <div className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-purple-500/20 header-landscape">
         <div className="flex items-center justify-between p-3 md:p-4 max-w-7xl mx-auto">
           <div className="flex items-center space-x-2 md:space-x-4">
             <Button
@@ -390,27 +397,30 @@ export default function Room({ roomCode }: RoomPageProps) {
       </div>
 
       {/* Video Player - Mobile Responsive */}
-      <div className="pt-16 md:pt-20">
+      <div className="pt-16 md:pt-20 video-container-landscape">
         <UniversalVideoPlayer
           videoUrl={currentVideoUrl}
           onSync={sendSync}
           onPlaybackControl={sendPlaybackControl}
           syncStatus={syncStatus}
         />
+
       </div>
 
       {/* Chat Panel */}
-      <ChatPanel
-        isVisible={showChat}
-        messages={messages}
-        onSendMessage={sendMessage}
-        onClose={() => setShowChat(false)}
-        currentUserId={userId}
-      />
+      <div className="chat-panel-landscape">
+        <ChatPanel
+          isVisible={showChat}
+          messages={messages}
+          onSendMessage={sendMessage}
+          onClose={() => setShowChat(false)}
+          currentUserId={userId}
+        />
+      </div>
 
       {/* Modern Side Panel - Mobile Responsive */}
       {showSidePanel && (
-        <div className="fixed left-2 top-4 md:left-4 md:top-24 bottom-32 md:bottom-auto z-40 animate-slide-up overflow-y-auto">
+        <div className="fixed left-2 top-4 md:left-4 md:top-24 bottom-32 md:bottom-auto z-40 animate-slide-up overflow-y-auto side-panel-landscape">
           <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl w-56 md:w-64">
             <CardContent className="p-4">
               <h3 className="text-sm font-semibold text-white mb-4 flex items-center">
@@ -518,7 +528,7 @@ export default function Room({ roomCode }: RoomPageProps) {
                     placeholder="Paste video URL here..."
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
-                    className="bg-cinema-gray/50 border-gray-600/50 text-white placeholder-gray-500 focus:border-accent-blue focus:bg-cinema-gray/70 rounded-xl h-10 md:h-12 text-base md:text-lg"
+                    className="bg-white/10 border-gray-600/50 text-gray-900 placeholder-gray-500 focus:border-accent-blue focus:bg-white/20 rounded-xl h-10 md:h-12 text-base md:text-lg dark:text-white"
                     autoFocus
                   />
                   
@@ -544,6 +554,10 @@ export default function Room({ roomCode }: RoomPageProps) {
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-accent-purple rounded-full"></div>
                         <span>doodstream</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-warning-orange rounded-full"></div>
+                        <span>myflixerz.to</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-accent-blue rounded-full"></div>
@@ -579,7 +593,7 @@ export default function Room({ roomCode }: RoomPageProps) {
       )}
 
       {/* Mobile-Optimized Bottom Toolbar */}
-      <div className="fixed bottom-4 left-4 right-4 md:bottom-6 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 md:max-w-2xl z-30">
+      <div className="fixed bottom-4 left-4 right-4 md:bottom-6 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 md:max-w-2xl z-30 bottom-controls-landscape">
         <div className="glass-dark border border-purple-500/20 shadow-2xl rounded-2xl p-3 md:p-4">
           {/* Mobile Layout - Compact Single Row */}
           <div className="block md:hidden">
