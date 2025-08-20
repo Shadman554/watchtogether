@@ -56,7 +56,7 @@ app.use((req, res, next) => {
     try {
       serveStatic(app);
     } catch (e) {
-      log(`Failed to serve static files: ${e.message}`);
+      log(`Failed to serve static files: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 

@@ -201,8 +201,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           case 'webrtc_signal':
             if (!ws.roomCode) return;
             
+            // Validate WebRTC signal payload
+            if (!message.payload || !message.payload.type || !message.payload.data) {
+              console.error('Invalid WebRTC signal payload:', message.payload);
+              return;
+            }
+            
             // Forward WebRTC signaling messages to other users in the room
             console.log(`Forwarding WebRTC signal in room ${ws.roomCode}:`, message.payload.type);
+            broadcastToRoom(ws.roomCode, message, ws);
+            break;
+
+          case 'voice_offer':
+          case 'voice_answer':
+          case 'voice_ice':
+            if (!ws.roomCode) return;
+            
+            // Forward voice signaling messages to other users in the room
+            console.log(`Forwarding voice signal in room ${ws.roomCode}:`, message.type);
             broadcastToRoom(ws.roomCode, message, ws);
             break;
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { ArrowLeft, MessageCircle, Mic, MicOff, Settings, Folder, Sparkles, Game
 import UniversalVideoPlayer from "@/components/universal-video-player";
 import ChatPanel from "@/components/chat-panel";
 import SyncStatus from "@/components/sync-status";
-import VoiceCall from "@/components/voice-call";
+
 import { useWebSocket } from "@/hooks/use-websocket";
 
 interface RoomPageProps {
@@ -29,8 +29,14 @@ export default function Room({ roomCode }: RoomPageProps) {
   const userId = localStorage.getItem("userId") || "";
   const username = localStorage.getItem("username") || "";
   const isHost = localStorage.getItem("isHost") === "true";
+  
+  // Voice call state
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
   const {
+    ws,
     isConnected,
     syncStatus,
     connectedUsers,
@@ -85,21 +91,170 @@ export default function Room({ roomCode }: RoomPageProps) {
     });
   };
 
-  const toggleVoiceCall = () => {
-    setIsVoiceCallActive(!isVoiceCallActive);
+  const toggleVoiceCall = async () => {
     if (!isVoiceCallActive) {
-      // Starting voice call is now handled by the VoiceCall component
-      toast({
-        title: "Voice Call Starting",
-        description: "Requesting microphone access...",
-      });
+      await startVoiceCall();
     } else {
+      stopVoiceCall();
+    }
+  };
+
+  const startVoiceCall = async () => {
+    try {
+      console.log('Getting microphone access...');
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }, 
+        video: false 
+      });
+      
+      localStreamRef.current = stream;
+      
+      // Create peer connection for audio streaming
+      await createPeerConnection(stream);
+      
+      setIsVoiceCallActive(true);
+      
       toast({
-        title: "Voice Call Ended",
-        description: "Voice call has been disconnected.",
+        title: "Voice Chat Started!",
+        description: "Microphone is active. Creating connection...",
+      });
+      
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      toast({
+        title: "Microphone Access Denied", 
+        description: "Please allow microphone access to use voice chat.",
+        variant: "destructive",
       });
     }
   };
+
+  const createPeerConnection = async (stream: MediaStream) => {
+    if (!ws || !connectedUsers.find(u => u.userId !== userId)) return;
+
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
+    
+    peerConnectionRef.current = pc;
+
+    // Add audio track
+    stream.getTracks().forEach(track => {
+      pc.addTrack(track, stream);
+      console.log('Added audio track to peer connection');
+    });
+
+    // Handle incoming audio
+    pc.ontrack = (event) => {
+      console.log('Received remote audio stream!');
+      const [remoteStream] = event.streams;
+      
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = remoteStream;
+        remoteAudioRef.current.play().catch(console.error);
+      }
+      
+      toast({
+        title: "Voice Connected!",
+        description: "You can now hear each other!",
+      });
+    };
+
+    // Handle ICE candidates
+    pc.onicecandidate = (event) => {
+      if (event.candidate && ws) {
+        ws.send(JSON.stringify({
+          type: 'voice_ice',
+          payload: { candidate: event.candidate },
+          timestamp: Date.now(),
+        }));
+      }
+    };
+
+    // Create and send offer
+    try {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      
+      if (ws) {
+        ws.send(JSON.stringify({
+          type: 'voice_offer',
+          payload: { offer },
+          timestamp: Date.now(),
+        }));
+      }
+      
+      console.log('Sent voice offer to peer');
+    } catch (error) {
+      console.error('Error creating offer:', error);
+    }
+  };
+
+  const stopVoiceCall = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+    
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = null;
+    }
+    
+    setIsVoiceCallActive(false);
+    toast({
+      title: "Voice Chat Stopped",
+      description: "Microphone has been turned off.",
+    });
+  };
+
+  // Handle WebSocket messages for voice
+  useEffect(() => {
+    if (!ws) return;
+
+    const handleMessage = async (event: MessageEvent) => {
+      try {
+        const message = JSON.parse(event.data);
+        
+        if (message.type === 'voice_offer' && peerConnectionRef.current) {
+          console.log('Received voice offer');
+          const pc = peerConnectionRef.current;
+          
+          await pc.setRemoteDescription(new RTCSessionDescription(message.payload.offer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          
+          ws.send(JSON.stringify({
+            type: 'voice_answer',
+            payload: { answer },
+            timestamp: Date.now(),
+          }));
+          
+          console.log('Sent voice answer');
+        } else if (message.type === 'voice_answer' && peerConnectionRef.current) {
+          console.log('Received voice answer');
+          await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(message.payload.answer));
+        } else if (message.type === 'voice_ice' && peerConnectionRef.current) {
+          console.log('Received ICE candidate');
+          await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(message.payload.candidate));
+        }
+      } catch (error) {
+        console.error('Error handling voice message:', error);
+      }
+    };
+
+    ws.addEventListener('message', handleMessage);
+    return () => ws.removeEventListener('message', handleMessage);
+  }, [ws]);
 
   // Auto-hide chat initially and ensure controls are visible
   useEffect(() => {
@@ -172,30 +327,31 @@ export default function Room({ roomCode }: RoomPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Premium Header Bar */}
+      {/* Premium Header Bar - Mobile Responsive */}
       <div className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-purple-500/20">
-        <div className="flex items-center justify-between p-4 max-w-7xl mx-auto">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between p-3 md:p-4 max-w-7xl mx-auto">
+          <div className="flex items-center space-x-2 md:space-x-4">
             <Button
               variant="ghost"
               onClick={handleBackToLobby}
-              className="glass hover:bg-purple-500/20 border border-purple-500/30 rounded-xl p-3 transition-all duration-300 hover:scale-105"
+              className="glass hover:bg-purple-500/20 border border-purple-500/30 rounded-xl p-2 md:p-3 transition-all duration-300 hover:scale-105"
             >
-              <ArrowLeft className="w-5 h-5 text-purple-400" />
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
             </Button>
-            <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
+            <div className="flex items-center space-x-2 md:space-x-3">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <h1 className="text-sm md:text-lg font-bold bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
                 CineSync Duo
               </h1>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <div className="glass rounded-xl px-4 py-2 border border-purple-500/30">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-400">Room:</span>
-                <span className="font-bold text-purple-400 text-lg tracking-wider">{roomCode}</span>
+          <div className="flex items-center space-x-1 md:space-x-2">
+            {/* Mobile Room Code Display */}
+            <div className="glass rounded-lg md:rounded-xl px-2 py-1 md:px-4 md:py-2 border border-purple-500/30">
+              <div className="flex items-center space-x-1 md:space-x-2">
+                <span className="text-xs md:text-sm text-gray-400 hidden md:block">Room:</span>
+                <span className="font-bold text-purple-400 text-sm md:text-lg tracking-wider">{roomCode}</span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -205,17 +361,18 @@ export default function Room({ roomCode }: RoomPageProps) {
                   }}
                   className="p-1 hover:bg-purple-500/20 rounded-lg transition-colors"
                 >
-                  <Copy className="w-4 h-4 text-purple-400" />
+                  <Copy className="w-3 h-3 md:w-4 md:h-4 text-purple-400" />
                 </Button>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            {/* Mobile User Display */}
+            <div className="flex items-center space-x-1 md:space-x-2">
               <div className="flex -space-x-2">
                 {connectedUsers.map((user, index) => (
                   <div
                     key={user.userId}
-                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+                    className={`w-6 h-6 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
                       user.isHost 
                         ? 'bg-purple-500 border-purple-400 text-white' 
                         : 'bg-blue-500 border-blue-400 text-white'
@@ -226,14 +383,14 @@ export default function Room({ roomCode }: RoomPageProps) {
                   </div>
                 ))}
               </div>
-              <span className="text-sm text-gray-400">{connectedUsers.length}/2</span>
+              <span className="text-xs md:text-sm text-gray-400">{connectedUsers.length}/2</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Video Player */}
-      <div className="pt-20">
+      {/* Video Player - Mobile Responsive */}
+      <div className="pt-16 md:pt-20">
         <UniversalVideoPlayer
           videoUrl={currentVideoUrl}
           onSync={sendSync}
@@ -279,32 +436,7 @@ export default function Room({ roomCode }: RoomPageProps) {
                   </div>
                 </Button>
 
-                {/* Voice Settings */}
-                <Button
-                  variant="ghost"
-                  onClick={toggleVoiceCall}
-                  className={`w-full justify-start border rounded-xl p-4 transition-all group ${
-                    isVoiceCallActive 
-                      ? 'bg-gradient-to-r from-sync-green/10 to-accent-blue/10 border-sync-green/30' 
-                      : 'bg-gradient-to-r from-gray-600/10 to-gray-500/10 border-gray-600/30'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                      isVoiceCallActive ? 'bg-sync-green/20' : 'bg-gray-600/20'
-                    }`}>
-                      {isVoiceCallActive ? <Mic className="w-5 h-5 text-sync-green" /> : <MicOff className="w-5 h-5 text-gray-400" />}
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-medium text-white">
-                        {isVoiceCallActive ? 'Voice Chat Active' : 'Start Voice Chat'}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {isVoiceCallActive ? 'Click to disconnect' : 'Talk with your friend'}
-                      </div>
-                    </div>
-                  </div>
-                </Button>
+
 
                 {/* AI Recommendations */}
                 <Button
@@ -582,15 +714,8 @@ export default function Room({ roomCode }: RoomPageProps) {
         </div>
       </div>
 
-      {/* Voice Call Component */}
-      <VoiceCall
-        isActive={isVoiceCallActive}
-        onToggle={toggleVoiceCall}
-        roomCode={roomCode}
-        userId={userId}
-        remoteUserId={connectedUsers.find(u => u.userId !== userId)?.userId}
-        sendWebRTCSignal={sendWebRTCSignal}
-      />
+      {/* Hidden audio element for remote audio */}
+      <audio ref={remoteAudioRef} autoPlay className="hidden" />
     </div>
   );
 }

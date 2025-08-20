@@ -326,19 +326,19 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
           </div>
         )}
 
-        {/* Connection Status Indicator */}
+        {/* Connection Status Indicator - Mobile Responsive */}
         {videoUrl && (
-          <div className="absolute top-4 right-4 z-10">
-            <div className={`glass rounded-xl px-3 py-2 border ${
+          <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10">
+            <div className={`glass rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-2 border ${
               syncStatus.isSync 
                 ? 'border-green-500/30 bg-green-500/10' 
                 : 'border-red-500/30 bg-red-500/10'
             }`}>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 md:space-x-2">
                 {syncStatus.isSync ? (
-                  <Wifi className="w-4 h-4 text-green-400" />
+                  <Wifi className="w-3 h-3 md:w-4 md:h-4 text-green-400" />
                 ) : (
-                  <WifiOff className="w-4 h-4 text-red-400" />
+                  <WifiOff className="w-3 h-3 md:w-4 md:h-4 text-red-400" />
                 )}
                 <span className={`text-xs font-medium ${
                   syncStatus.isSync ? 'text-green-400' : 'text-red-400'
@@ -346,33 +346,33 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
                   {syncStatus.isSync ? 'Synced' : 'Offline'}
                 </span>
                 {syncStatus.isSync && (
-                  <span className="text-xs text-gray-400">±{syncStatus.latency}ms</span>
+                  <span className="text-xs text-gray-400 hidden md:inline">±{syncStatus.latency}ms</span>
                 )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Premium Video Controls - Only show for direct videos */}
+        {/* Premium Video Controls - Mobile Responsive */}
         {videoType === 'direct' && videoUrl && (
           <div 
-            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-6 transition-all duration-500 ${
+            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-3 md:p-6 transition-all duration-500 ${
               showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            {/* Enhanced Progress Bar */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between text-sm text-gray-200 mb-3">
-                <div className="flex items-center space-x-2">
-                  <span className="font-mono">{formatTime(currentTime)}</span>
+            {/* Enhanced Progress Bar - Mobile Responsive */}
+            <div className="mb-3 md:mb-6">
+              <div className="flex items-center justify-between text-xs md:text-sm text-gray-200 mb-2 md:mb-3">
+                <div className="flex items-center space-x-1 md:space-x-2">
+                  <span className="font-mono text-xs md:text-sm">{formatTime(currentTime)}</span>
                   {syncMode && (
                     <div className="flex items-center space-x-1">
-                      <Zap className="w-3 h-3 text-purple-400" />
-                      <span className="text-xs text-purple-400">Sync</span>
+                      <Zap className="w-2 h-2 md:w-3 md:h-3 text-purple-400" />
+                      <span className="text-xs text-purple-400 hidden md:inline">Sync</span>
                     </div>
                   )}
                 </div>
-                <span className="font-mono">{formatTime(duration)}</span>
+                <span className="font-mono text-xs md:text-sm">{formatTime(duration)}</span>
               </div>
               <div className="relative group">
                 <Slider
@@ -397,8 +397,91 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
               </div>
             </div>
 
-            {/* Premium Control Buttons */}
-            <div className="flex items-center justify-between">
+            {/* Premium Control Buttons - Mobile Responsive */}
+            <div className="block md:hidden">
+              {/* Mobile Layout - Compact Controls */}
+              <div className="flex items-center justify-center space-x-4 mb-3">
+                {/* Main play/pause - prominent */}
+                <Button
+                  onClick={handlePlay}
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-400 hover:to-blue-400 rounded-full w-12 h-12 p-0 shadow-xl"
+                >
+                  {isPlaying ? (
+                    <Pause className="w-6 h-6" />
+                  ) : (
+                    <Play className="w-6 h-6 ml-0.5" />
+                  )}
+                </Button>
+                
+                {/* Skip controls */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleSeek([Math.max(0, currentTime - 10)])}
+                  className="text-white hover:text-purple-400 hover:bg-purple-500/20 rounded-xl p-2"
+                >
+                  <SkipBack className="w-4 h-4" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleSeek([Math.min(duration, currentTime + 10)])}
+                  className="text-white hover:text-purple-400 hover:bg-purple-500/20 rounded-xl p-2"
+                >
+                  <SkipForward className="w-4 h-4" />
+                </Button>
+                
+                {/* Volume */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMute}
+                  className="text-white hover:text-accent-blue rounded-xl p-2"
+                >
+                  {isMuted || volume === 0 ? (
+                    <VolumeX className="w-4 h-4" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </Button>
+                
+                {/* Fullscreen */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFullscreen}
+                  className="text-white hover:text-accent-purple rounded-xl p-2"
+                >
+                  <Maximize className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {/* Mobile Sync Toggle */}
+              <div className="flex items-center justify-center">
+                <div className="flex items-center space-x-2 bg-cinema-dark/80 backdrop-blur-sm rounded-full px-3 py-1">
+                  <div className={`w-2 h-2 rounded-full ${syncMode ? 'bg-sync-green' : 'bg-gray-500'}`} />
+                  <span className="text-xs font-medium text-white">Sync</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSyncMode(!syncMode)}
+                    className="w-8 h-4 p-0"
+                  >
+                    <div className={`w-full h-full rounded-full transition-colors ${
+                      syncMode ? 'bg-sync-green' : 'bg-gray-500'
+                    }`}>
+                      <div className={`w-3 h-3 bg-white rounded-full transition-transform ${
+                        syncMode ? 'translate-x-4' : 'translate-x-0.5'
+                      }`} />
+                    </div>
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Layout - Full Controls */}
+            <div className="hidden md:flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 {/* Skip back */}
                 <Button
@@ -425,7 +508,8 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:text-accent-purple"
+                  onClick={() => handleSeek([Math.min(duration, currentTime + 10)])}
+                  className="text-white hover:text-accent-purple rounded-xl p-3 transition-all duration-300 hover:scale-105"
                 >
                   <SkipForward className="w-5 h-5" />
                 </Button>

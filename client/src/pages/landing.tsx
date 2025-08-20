@@ -17,19 +17,30 @@ export default function Landing() {
   const handleCreateRoom = async () => {
     try {
       setIsCreating(true);
+      console.log('Creating room...');
+      
       const response = await apiRequest("POST", "/api/rooms");
+      console.log('Room creation response:', response.status);
+      
       const data = await response.json();
+      console.log('Room data received:', data);
       
       // Store user ID in localStorage for this session
       localStorage.setItem("userId", data.userId);
       localStorage.setItem("username", `User-${data.userId.slice(0, 4)}`);
       localStorage.setItem("isHost", "true");
       
+      toast({
+        title: "Room Created!",
+        description: `Room ${data.room.code} created successfully!`,
+      });
+      
       setLocation(`/room/${data.room.code}`);
     } catch (error) {
+      console.error('Room creation error:', error);
       toast({
         title: "Error",
-        description: "Failed to create room. Please try again.",
+        description: `Failed to create room: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -49,19 +60,30 @@ export default function Landing() {
 
     try {
       setIsJoining(true);
+      console.log('Joining room:', roomCode);
+      
       const response = await apiRequest("GET", `/api/rooms/${roomCode.toUpperCase()}`);
+      console.log('Join room response:', response.status);
+      
       const data = await response.json();
+      console.log('Room join data:', data);
       
       // Store user ID in localStorage for this session
       localStorage.setItem("userId", data.userId);
       localStorage.setItem("username", `User-${data.userId.slice(0, 4)}`);
       localStorage.setItem("isHost", "false");
       
+      toast({
+        title: "Joined Room!",
+        description: `Successfully joined room ${data.room.code}!`,
+      });
+      
       setLocation(`/room/${data.room.code}`);
     } catch (error) {
+      console.error('Room join error:', error);
       toast({
         title: "Room Not Found",
-        description: "The room code you entered doesn't exist.",
+        description: `Error joining room: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -70,7 +92,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 overflow-y-auto" style={{ minHeight: '100vh', height: 'auto' }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
       <div className="max-w-6xl w-full mx-auto animate-fade-up py-4">
         {/* Mobile-First Hero Section */}
         <div className="text-center mb-6 md:mb-16">

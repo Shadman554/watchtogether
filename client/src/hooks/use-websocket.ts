@@ -145,9 +145,13 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
 
           case "webrtc_signal":
             // Forward WebRTC signaling to voice call component
-            window.dispatchEvent(new CustomEvent('webrtc_signal', {
-              detail: message.payload
-            }));
+            if (message.payload && message.payload.type && message.payload.data) {
+              window.dispatchEvent(new CustomEvent('webrtc_signal', {
+                detail: message.payload
+              }));
+            } else {
+              console.error('Invalid WebRTC signal received:', message.payload);
+            }
             break;
 
           case "error":
@@ -227,16 +231,19 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
   }, []);
 
   const sendWebRTCSignal = useCallback((type: string, data: any) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN && data && type) {
       wsRef.current.send(JSON.stringify({
         type: "webrtc_signal",
         payload: { type, data, userId },
         timestamp: Date.now(),
       }));
+    } else {
+      console.error('Cannot send WebRTC signal:', { connected: wsRef.current?.readyState === WebSocket.OPEN, type, hasData: !!data });
     }
   }, [userId]);
 
   return {
+    ws: wsRef.current,
     isConnected,
     connectedUsers,
     messages,

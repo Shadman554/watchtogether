@@ -56,27 +56,40 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
   };
 
   const formatMessageTime = (message: Message) => {
-    const date = message.createdAt || (message.timestamp ? new Date(message.timestamp) : new Date());
+    let date;
+    if (message.createdAt) {
+      date = new Date(message.createdAt);
+    } else if (message.timestamp) {
+      date = new Date(message.timestamp);
+    } else {
+      date = new Date();
+    }
+    
+    // Ensure date is valid
+    if (isNaN(date.getTime())) {
+      date = new Date();
+    }
+    
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <div className={`fixed top-0 right-0 w-full md:w-80 h-full glass-dark border-l border-purple-500/20 transform transition-transform duration-500 z-50 ${
+    <div className={`fixed top-0 right-0 w-full sm:w-80 md:w-96 h-full glass-dark border-l border-purple-500/20 transform transition-transform duration-500 z-50 ${
       isVisible ? 'translate-x-0' : 'translate-x-full'
     }`}>
       <Card className="h-full bg-transparent border-0 flex flex-col">
         {/* Premium Mobile Chat Header */}
-        <CardHeader className="p-4 border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10 flex-shrink-0">
+        <CardHeader className="p-3 md:p-4 border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <div className="flex items-center space-x-2 md:space-x-3">
+              <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
                 </svg>
               </div>
               <div>
-                <h3 className="font-bold text-white text-sm">Live Chat</h3>
-                <p className="text-xs text-gray-400">Real-time messaging</p>
+                <h3 className="font-bold text-white text-xs md:text-sm">Live Chat</h3>
+                <p className="text-xs text-gray-400 hidden md:block">Real-time messaging</p>
               </div>
             </div>
             <Button
@@ -91,18 +104,18 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
         </CardHeader>
 
         {/* Messages Container - Mobile Responsive */}
-        <CardContent className="flex-1 p-4 flex flex-col overflow-hidden">
-          <ScrollArea className="flex-1 pr-4 mb-4">
-            <div className="space-y-4">
+        <CardContent className="flex-1 p-3 md:p-4 flex flex-col overflow-hidden">
+          <ScrollArea className="flex-1 pr-2 md:pr-4 mb-3 md:mb-4">
+            <div className="space-y-3 md:space-y-4">
               {messages.length === 0 ? (
-                <div className="text-center text-gray-400 mt-12 animate-fade-up">
-                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
-                    <svg className="w-8 h-8 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                <div className="text-center text-gray-400 mt-8 md:mt-12 animate-fade-up">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 animate-float">
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
                     </svg>
                   </div>
-                  <h4 className="font-semibold text-white mb-2">Ready to Chat</h4>
-                  <p className="text-sm leading-relaxed">Start your conversation and enjoy<br />real-time messaging while watching!</p>
+                  <h4 className="font-semibold text-white mb-2 text-sm md:text-base">Ready to Chat</h4>
+                  <p className="text-xs md:text-sm leading-relaxed px-4">Start your conversation and enjoy real-time messaging while watching!</p>
                 </div>
               ) : (
                 messages.map((message, index) => {
@@ -130,11 +143,11 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
 
                   return (
                     <div key={message.id || index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} animate-fade-up`} style={{ animationDelay: `${index * 0.1}s` }}>
-                      <div className={`max-w-[80%] group ${isOwn ? 'order-2' : 'order-1'}`}>
-                        <div className={`p-3 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 ${
+                      <div className={`max-w-[85%] md:max-w-[80%] group ${isOwn ? 'order-2' : 'order-1'}`}>
+                        <div className={`p-2 md:p-3 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 ${
                           isOwn
-                            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white ml-2'
-                            : 'bg-slate-800/80 text-gray-100 mr-2 border border-slate-700/50'
+                            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white ml-1 md:ml-2'
+                            : 'bg-slate-800/80 text-gray-100 mr-1 md:mr-2 border border-slate-700/50'
                         }`}>
                           <div className="flex items-center justify-between mb-1">
                             <span className={`text-xs font-medium ${
@@ -148,7 +161,7 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
                               {formatMessageTime(message)}
                             </span>
                           </div>
-                          <p className="text-sm leading-relaxed break-words">{message.content}</p>
+                          <p className="text-xs md:text-sm leading-relaxed break-words">{message.content}</p>
                         </div>
                       </div>
                     </div>
@@ -160,23 +173,23 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
           </ScrollArea>
 
           {/* Premium Chat Input - Fixed at bottom */}
-          <div className="flex-shrink-0 pt-4 border-t border-purple-500/20 bg-gradient-to-r from-purple-500/5 to-blue-500/5">
+          <div className="flex-shrink-0 pt-3 md:pt-4 border-t border-purple-500/20 bg-gradient-to-r from-purple-500/5 to-blue-500/5">
             {/* Quick Reactions */}
-            <div className="flex justify-center space-x-2 mb-3">
+            <div className="flex justify-center space-x-1 md:space-x-2 mb-2 md:mb-3">
               {EMOJI_REACTIONS.map((emoji) => (
                 <Button
                   key={emoji}
                   variant="ghost"
                   size="sm"
                   onClick={() => handleEmojiReaction(emoji)}
-                  className="text-lg hover:scale-110 transition-all duration-300 p-2 h-auto hover:bg-purple-500/20 rounded-lg"
+                  className="text-sm md:text-lg hover:scale-110 transition-all duration-300 p-1 md:p-2 h-auto hover:bg-purple-500/20 rounded-lg"
                 >
                   {emoji}
                 </Button>
               ))}
             </div>
 
-            {/* Enhanced Text Input */}
+            {/* Enhanced Text Input - Mobile Responsive */}
             <div className="flex space-x-2">
               <Input
                 type="text"
@@ -184,12 +197,12 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 bg-slate-800/50 border-slate-600 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 py-3 px-4 rounded-xl transition-all duration-300"
+                className="flex-1 bg-slate-800/50 border-slate-600 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 py-2 md:py-3 px-3 md:px-4 rounded-xl transition-all duration-300 text-sm md:text-base"
               />
               <Button
                 onClick={handleSendMessage}
                 disabled={!messageInput.trim()}
-                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-400 hover:to-blue-400 px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
+                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-400 hover:to-blue-400 px-3 md:px-4 py-2 md:py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
               >
                 <Send className="w-4 h-4" />
               </Button>

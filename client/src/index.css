@@ -160,11 +160,19 @@
 html {
   scroll-behavior: smooth;
   height: 100%;
+  overflow-y: auto;
 }
 
 body {
-  height: 100%;
+  height: auto;
+  min-height: 100vh;
   overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#root {
+  height: auto;
+  min-height: 100vh;
 }
 
 /* Mobile viewport fix */
@@ -379,4 +387,65 @@ body {
 
 .chat-messages::-webkit-scrollbar-thumb:hover {
   background: var(--accent-blue);
+}
+
+/* Mobile landscape mode fixes - More aggressive targeting - Updated v2 */
+@media (max-height: 500px) and (orientation: landscape), 
+       (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+  
+  /* Main container adjustments */
+  .min-h-screen {
+    min-height: 100vh !important;
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+  
+  /* Header fixes */
+  .fixed.top-0 {
+    height: 40px !important;
+    padding: 4px 8px !important;
+  }
+  
+  .fixed.top-0 h1 {
+    font-size: 12px !important;
+  }
+  
+  .fixed.top-0 button {
+    padding: 4px 6px !important;
+  }
+  
+  /* Video player container */
+  .pt-16.md\\:pt-20 {
+    padding-top: 40px !important;
+    height: calc(100vh - 80px) !important;
+  }
+  
+  /* Video player iframe/video elements */
+  .aspect-video {
+    height: calc(100vh - 80px) !important;
+    aspect-ratio: unset !important;
+  }
+  
+  /* Bottom toolbar */
+  .fixed.bottom-4 {
+    bottom: 4px !important;
+    left: 4px !important;
+    right: 4px !important;
+    height: 36px !important;
+  }
+  
+  .fixed.bottom-4 .glass-dark {
+    padding: 4px 8px !important;
+    border-radius: 8px !important;
+  }
+  
+  .fixed.bottom-4 button {
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+  }
+  
+  .fixed.bottom-4 .w-4 {
+    width: 12px !important;
+    height: 12px !important;
+  }
 }
