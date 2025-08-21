@@ -482,7 +482,6 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
                     frameBorder="0"
                     allowFullScreen
                     allow="autoplay; encrypted-media; fullscreen; clipboard-read; clipboard-write"
-                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-top-navigation allow-pointer-lock"
                     referrerPolicy="no-referrer-when-downgrade"
                     style={{ display: 'block', width: '100%', height: '100%' }}
                     onLoad={() => console.log('Iframe loaded successfully')}

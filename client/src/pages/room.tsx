@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageCircle, Mic, MicOff, Settings, Folder, Sparkles, Gamepad2, Users, Copy, Eye, EyeOff, Phone, PhoneOff, Volume2, Monitor, Star, Zap, Heart, Share2 } from "lucide-react";
+import { ArrowLeft, MessageCircle, Mic, MicOff, Folder, Users, Copy, Eye, EyeOff, Phone, PhoneOff, Volume2, Star, Zap, Heart, Share2 } from "lucide-react";
 import UniversalVideoPlayer from "@/components/universal-video-player";
 import ChatPanel from "@/components/chat-panel";
 import SyncStatus from "@/components/sync-status";
@@ -30,7 +30,6 @@ export default function Room({ roomCode }: RoomPageProps) {
       setIsUrlInputVisible(false);
     }
   }, [currentVideoUrl]);
-  const [showSidePanel, setShowSidePanel] = useState(false);
   const { toast } = useToast();
 
   const userId = localStorage.getItem("userId") || "";
@@ -396,15 +395,14 @@ export default function Room({ roomCode }: RoomPageProps) {
         </div>
       </div>
 
-      {/* Video Player - Mobile Responsive */}
-      <div className="pt-16 md:pt-20 video-container-landscape">
+      {/* Video Player - Full Screen */}
+      <div className="fixed top-16 md:top-20 bottom-20 md:bottom-24 left-0 right-0 z-20 video-container-landscape">
         <UniversalVideoPlayer
           videoUrl={currentVideoUrl}
           onSync={sendSync}
           onPlaybackControl={sendPlaybackControl}
           syncStatus={syncStatus}
         />
-
       </div>
 
       {/* Chat Panel */}
@@ -418,93 +416,6 @@ export default function Room({ roomCode }: RoomPageProps) {
         />
       </div>
 
-      {/* Modern Side Panel - Mobile Responsive */}
-      {showSidePanel && (
-        <div className="fixed left-2 top-4 md:left-4 md:top-24 bottom-32 md:bottom-auto z-40 animate-slide-up overflow-y-auto side-panel-landscape">
-          <Card className="bg-cinema-dark/95 backdrop-blur-xl border-gray-700/50 shadow-2xl w-56 md:w-64">
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold text-white mb-4 flex items-center">
-                <Monitor className="w-4 h-4 mr-2 text-accent-purple" />
-                Room Controls
-              </h3>
-              
-              <div className="space-y-3">
-                {/* Load Video */}
-                <Button
-                  variant="ghost"
-                  onClick={() => setIsUrlInputVisible(true)}
-                  className="w-full justify-start bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 hover:from-accent-blue/20 hover:to-accent-purple/20 border border-accent-blue/30 rounded-xl p-4 transition-all group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-accent-blue/20 rounded-xl flex items-center justify-center group-hover:bg-accent-blue/30 transition-colors">
-                      <Folder className="w-5 h-5 text-accent-blue" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-medium text-white">Load Video</div>
-                      <div className="text-xs text-gray-400">YouTube, streaming sites, direct links</div>
-                    </div>
-                  </div>
-                </Button>
-
-
-
-                {/* AI Recommendations */}
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start bg-gradient-to-r from-warning-orange/10 to-accent-purple/10 hover:from-warning-orange/20 hover:to-accent-purple/20 border border-warning-orange/30 rounded-xl p-4 transition-all group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-warning-orange/20 rounded-xl flex items-center justify-center group-hover:bg-warning-orange/30 transition-colors">
-                      <Sparkles className="w-5 h-5 text-warning-orange" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-medium text-white">AI Suggestions</div>
-                      <div className="text-xs text-gray-400">Get movie recommendations</div>
-                    </div>
-                  </div>
-                </Button>
-
-                {/* Interactive Features */}
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start bg-gradient-to-r from-sync-green/10 to-accent-blue/10 hover:from-sync-green/20 hover:to-accent-blue/20 border border-sync-green/30 rounded-xl p-4 transition-all group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-sync-green/20 rounded-xl flex items-center justify-center group-hover:bg-sync-green/30 transition-colors">
-                      <Gamepad2 className="w-5 h-5 text-sync-green" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-medium text-white">Interactive Mode</div>
-                      <div className="text-xs text-gray-400">Games & polls during movies</div>
-                    </div>
-                  </div>
-                </Button>
-
-                {/* Room Stats */}
-                <div className="mt-4 p-3 bg-cinema-gray/50 rounded-xl border border-gray-600/30">
-                  <div className="text-xs text-gray-400 mb-2">Room Statistics</div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Connected:</span>
-                      <span className="text-sync-green">{connectedUsers.length}/2 users</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Sync Status:</span>
-                      <span className={syncStatus.isSync ? 'text-sync-green' : 'text-red-400'}>
-                        {syncStatus.isSync ? 'Synced' : 'Disconnected'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Latency:</span>
-                      <span className="text-accent-blue">±{syncStatus.latency}ms</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Mobile-Responsive URL Input Modal */}
       {isUrlInputVisible && (
@@ -521,67 +432,32 @@ export default function Room({ roomCode }: RoomPageProps) {
                 </div>
               </div>
               
-              <div className="space-y-4 md:space-y-6">
-                <div className="space-y-3">
-                  <Input
-                    type="text"
-                    placeholder="Paste video URL here..."
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    className="bg-white/10 border-gray-600/50 text-gray-900 placeholder-gray-500 focus:border-accent-blue focus:bg-white/20 rounded-xl h-10 md:h-12 text-base md:text-lg dark:text-white"
-                    autoFocus
-                  />
-                  
-                  <div className="bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 rounded-xl p-3 md:p-4 border border-accent-blue/20">
-                    <div className="text-xs md:text-sm text-gray-300 mb-2 font-medium">Supported Platforms:</div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-2 text-xs text-gray-400">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-accent-purple rounded-full"></div>
-                        <span>YouTube</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-accent-blue rounded-full"></div>
-                        <span>beenar.net</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-sync-green rounded-full"></div>
-                        <span>streamtape</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-warning-orange rounded-full"></div>
-                        <span>mixdrop</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-accent-purple rounded-full"></div>
-                        <span>doodstream</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-warning-orange rounded-full"></div>
-                        <span>myflixerz.to</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-accent-blue rounded-full"></div>
-                        <span>Direct files (.mp4, .webm)</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="space-y-6">
+                <Input
+                  type="text"
+                  placeholder="Paste video URL here..."
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  className="bg-slate-800/50 border-slate-600/50 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-2xl h-14 text-lg px-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-slate-700/50"
+                  autoFocus
+                />
                 
-                <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3">
+                <div className="flex space-x-4">
                   <Button
                     onClick={handleLoadVideo}
                     disabled={!videoUrl.trim()}
-                    className="flex-1 bg-gradient-to-r from-accent-purple to-accent-blue hover:from-accent-purple/80 hover:to-accent-blue/80 text-white font-semibold py-3 rounded-xl transition-all"
+                    className="flex-1 bg-gradient-to-r from-purple-600 via-purple-500 to-blue-500 hover:from-purple-500 hover:via-purple-400 hover:to-blue-400 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-4 rounded-2xl shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-purple-500/25 disabled:hover:scale-100 disabled:opacity-50 relative overflow-hidden group"
                   >
-                    Load Video
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <Folder className="w-5 h-5 mr-2 relative z-10" />
+                    <span className="relative z-10">Load Video</span>
                   </Button>
                   <Button
-                    variant="outline"
                     onClick={() => {
                       setIsUrlInputVisible(false);
                       setVideoUrl("");
                     }}
-                    className="flex-1 border-gray-600/50 text-gray-300 hover:bg-cinema-gray/50 py-3 rounded-xl transition-all"
+                    className="flex-1 bg-slate-700/50 hover:bg-slate-600/50 border-2 border-slate-600/50 hover:border-slate-500/50 text-gray-300 hover:text-white font-semibold py-4 rounded-2xl shadow-lg transition-all duration-300 hover:scale-[1.02] backdrop-blur-sm"
                   >
                     Cancel
                   </Button>
@@ -630,17 +506,6 @@ export default function Room({ roomCode }: RoomPageProps) {
                 {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
               </Button>
 
-              <Button
-                variant="ghost"
-                onClick={() => setShowSidePanel(!showSidePanel)}
-                className={`rounded-xl px-3 py-2 ${
-                  showSidePanel 
-                    ? 'bg-orange-500/20 text-orange-400 border border-orange-400/30' 
-                    : 'bg-slate-700/50 text-gray-300 hover:bg-orange-500/10'
-                }`}
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
             </div>
           </div>
 
@@ -690,18 +555,6 @@ export default function Room({ roomCode }: RoomPageProps) {
               {isVoiceCallActive ? <Phone className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
             </Button>
 
-            {/* Settings Panel Toggle */}
-            <Button
-              variant="ghost"
-              onClick={() => setShowSidePanel(!showSidePanel)}
-              className={`rounded-xl px-4 py-3 ${
-                showSidePanel 
-                  ? 'bg-orange-600/20 text-orange-400 border border-orange-400/30' 
-                  : 'bg-gray-700/50 text-gray-300 hover:text-orange-400 hover:bg-orange-600/10'
-              }`}
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
 
             {/* Room Code Display */}
             <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-xl px-4 py-3 border border-purple-400/30">
