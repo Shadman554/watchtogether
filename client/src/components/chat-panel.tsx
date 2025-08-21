@@ -52,6 +52,7 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [currentEmojiCategory, setCurrentEmojiCategory] = useState('faces');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<number>();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -269,10 +270,7 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
                                 src={message.content} 
                                 alt="Shared image" 
                                 className="w-full max-w-xs max-h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                onClick={() => {
-                                  // Open image in new tab for full view
-                                  window.open(message.content, '_blank');
-                                }}
+                                onClick={() => setSelectedImage(message.content)}
                               />
                             </div>
                           </div>
@@ -471,6 +469,31 @@ export default function ChatPanel({ isVisible, messages, onSendMessage, onClose,
           </div>
         </CardContent>
       </Card>
+
+      {/* Image Viewer Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60] animate-fade-up"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] p-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 text-white hover:bg-white/20 rounded-full p-2 z-10"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+            <img 
+              src={selectedImage} 
+              alt="Full size image" 
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
