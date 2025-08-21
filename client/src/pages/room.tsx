@@ -143,61 +143,71 @@ export default function Room({ roomCode }: RoomPageProps) {
   const createPeerConnection = async (stream: MediaStream) => {
     if (!ws || !connectedUsers.find(u => u.userId !== userId)) return;
 
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    });
-    
-    peerConnectionRef.current = pc;
-
-    // Add audio track
-    stream.getTracks().forEach(track => {
-      pc.addTrack(track, stream);
-      console.log('Added audio track to peer connection');
-    });
-
-    // Handle incoming audio
-    pc.ontrack = (event) => {
-      console.log('Received remote audio stream!');
-      const [remoteStream] = event.streams;
-      
-      if (remoteAudioRef.current) {
-        remoteAudioRef.current.srcObject = remoteStream;
-        remoteAudioRef.current.play().catch(console.error);
-      }
-      
-      toast({
-        title: "Voice Connected!",
-        description: "You can now hear each other!",
-      });
-    };
-
-    // Handle ICE candidates
-    pc.onicecandidate = (event) => {
-      if (event.candidate && ws) {
-        ws.send(JSON.stringify({
-          type: 'voice_ice',
-          payload: { candidate: event.candidate },
-          timestamp: Date.now(),
-        }));
-      }
-    };
-
-    // Create and send offer
     try {
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      });
       
-      if (ws) {
-        ws.send(JSON.stringify({
-          type: 'voice_offer',
-          payload: { offer },
-          timestamp: Date.now(),
-        }));
+      peerConnectionRef.current = pc;
+
+      // Add audio track
+      stream.getTracks().forEach(track => {
+        pc.addTrack(track, stream);
+        console.log('Added audio track to peer connection');
+      });
+
+      // Handle incoming audio
+      pc.ontrack = (event) => {
+        console.log('Received remote audio stream!');
+        const [remoteStream] = event.streams;
+        
+        if (remoteAudioRef.current) {
+          remoteAudioRef.current.srcObject = remoteStream;
+          remoteAudioRef.current.play().catch(error => {
+            console.error('Failed to play remote audio:', error);
+          });
+        }
+        
+        toast({
+          title: "Voice Connected!",
+          description: "You can now hear each other!",
+        });
+      };
+
+      // Handle ICE candidates
+      pc.onicecandidate = (event) => {
+        if (event.candidate && ws) {
+          try {
+            ws.send(JSON.stringify({
+              type: 'voice_ice',
+              payload: { candidate: event.candidate },
+              timestamp: Date.now(),
+            }));
+          } catch (error) {
+            console.error('Failed to send ICE candidate:', error);
+          }
+        }
+      };
+
+      // Create and send offer
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        if (ws) {
+          ws.send(JSON.stringify({
+            type: 'voice_offer',
+            payload: { offer },
+            timestamp: Date.now(),
+          }));
+        }
+        
+        console.log('Sent voice offer to peer');
+      } catch (error) {
+        console.error('Error creating offer:', error);
       }
-      
-      console.log('Sent voice offer to peer');
     } catch (error) {
-      console.error('Error creating offer:', error);
+      console.error('Error creating peer connection:', error);
     }
   };
 
@@ -235,23 +245,35 @@ export default function Room({ roomCode }: RoomPageProps) {
           console.log('Received voice offer');
           const pc = peerConnectionRef.current;
           
-          await pc.setRemoteDescription(new RTCSessionDescription(message.payload.offer));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          
-          ws.send(JSON.stringify({
-            type: 'voice_answer',
-            payload: { answer },
-            timestamp: Date.now(),
-          }));
-          
-          console.log('Sent voice answer');
+          try {
+            await pc.setRemoteDescription(new RTCSessionDescription(message.payload.offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            
+            ws.send(JSON.stringify({
+              type: 'voice_answer',
+              payload: { answer },
+              timestamp: Date.now(),
+            }));
+            
+            console.log('Sent voice answer');
+          } catch (voiceError) {
+            console.error('Voice offer handling failed:', voiceError);
+          }
         } else if (message.type === 'voice_answer' && peerConnectionRef.current) {
           console.log('Received voice answer');
-          await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(message.payload.answer));
+          try {
+            await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(message.payload.answer));
+          } catch (voiceError) {
+            console.error('Voice answer handling failed:', voiceError);
+          }
         } else if (message.type === 'voice_ice' && peerConnectionRef.current) {
           console.log('Received ICE candidate');
-          await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(message.payload.candidate));
+          try {
+            await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(message.payload.candidate));
+          } catch (voiceError) {
+            console.error('ICE candidate handling failed:', voiceError);
+          }
         }
       } catch (error) {
         console.error('Error handling voice message:', error);
@@ -259,7 +281,11 @@ export default function Room({ roomCode }: RoomPageProps) {
     };
 
     ws.addEventListener('message', handleMessage);
-    return () => ws.removeEventListener('message', handleMessage);
+    return () => {
+      if (ws) {
+        ws.removeEventListener('message', handleMessage);
+      }
+    };
   }, [ws]);
 
   // Auto-hide chat initially and ensure controls are visible
@@ -271,27 +297,41 @@ export default function Room({ roomCode }: RoomPageProps) {
   // Listen for video URL changes from remote user
   useEffect(() => {
     const handleVideoUrlChange = (event: CustomEvent) => {
-      const { videoUrl } = event.detail;
-      console.log('Received video URL from remote user:', videoUrl);
-      setCurrentVideoUrl(videoUrl);
-      
-      // Force a small delay to ensure the state updates
-      setTimeout(() => {
-        console.log('Current video URL updated to:', videoUrl);
-      }, 100);
-      
-      toast({
-        title: "Video Loaded by Host",
-        description: "A new video has been loaded in the room!",
-      });
+      try {
+        const { videoUrl } = event.detail;
+        console.log('Received video URL from remote user:', videoUrl);
+        
+        // Only update and show notification if it's actually a different video
+        if (videoUrl && videoUrl !== currentVideoUrl) {
+          setCurrentVideoUrl(videoUrl);
+          
+          // Force a small delay to ensure the state updates
+          setTimeout(() => {
+            console.log('Current video URL updated to:', videoUrl);
+          }, 100);
+          
+          toast({
+            title: "Video Loaded by Host",
+            description: "A new video has been loaded in the room!",
+          });
+        } else {
+          console.log('Ignoring duplicate or empty video URL change:', videoUrl);
+        }
+      } catch (error) {
+        console.error('Error handling video URL change:', error);
+      }
     };
 
     window.addEventListener('videoUrlChange', handleVideoUrlChange as EventListener);
     
     return () => {
-      window.removeEventListener('videoUrlChange', handleVideoUrlChange as EventListener);
+      try {
+        window.removeEventListener('videoUrlChange', handleVideoUrlChange as EventListener);
+      } catch (error) {
+        console.error('Error removing event listener:', error);
+      }
     };
-  }, [toast]);
+  }, [toast, currentVideoUrl]);
 
   if (!isConnected) {
     return (

@@ -133,10 +133,10 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
               latency: Date.now() - message.timestamp,
             }));
             
-            // Handle video change - when host loads a new video
+            // Handle video change - only trigger when it's actually a different video
             if (message.payload.action === 'video_change' && message.payload.videoId) {
               console.log('Triggering video URL change event with:', message.payload.videoId);
-              // Trigger video URL update for guest
+              // Always trigger the event - let the room component decide if it's a real change
               window.dispatchEvent(new CustomEvent('videoUrlChange', {
                 detail: { videoUrl: message.payload.videoId }
               }));
@@ -172,21 +172,32 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
       setIsConnected(false);
       setSyncStatus(prev => ({ ...prev, isSync: false }));
       
-      // Attempt to reconnect after 3 seconds
-      setTimeout(() => {
-        if (wsRef.current?.readyState === WebSocket.CLOSED) {
-          connect();
-        }
-      }, 3000);
+      // Only attempt to reconnect if the page is still active and not being refreshed
+      if (document.visibilityState === 'visible' && !document.hidden) {
+        setTimeout(() => {
+          if (wsRef.current?.readyState === WebSocket.CLOSED) {
+            try {
+              connect();
+            } catch (error) {
+              console.error("Reconnection failed:", error);
+            }
+          }
+        }, 3000);
+      }
     };
 
     ws.onerror = (error) => {
       console.error("WebSocket error:", error);
-      toast({
-        title: "Connection Error",
-        description: "Failed to connect to the room. Retrying...",
-        variant: "destructive",
-      });
+      // Don't show error toast immediately - let reconnection handle it
+      setTimeout(() => {
+        if (!isConnected) {
+          toast({
+            title: "Connection Issue",
+            description: "Trying to reconnect...",
+            variant: "destructive",
+          });
+        }
+      }, 5000);
     };
   }, [roomCode, userId, username, isHost, toast]);
 
