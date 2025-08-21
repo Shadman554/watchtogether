@@ -288,11 +288,51 @@ export default function Room({ roomCode }: RoomPageProps) {
     };
   }, [ws]);
 
-  // Auto-hide chat initially and ensure controls are visible
+  // Auto-hide chat initially, ensure controls are visible, and recover session
   useEffect(() => {
     setShowChat(false);
     setShowControls(true); // Always show controls by default
-  }, []);
+    
+    // Try to recover session after page refresh
+    const recoverSession = () => {
+      try {
+        const sessionData = localStorage.getItem(`cinesync_session_${roomCode}`);
+        if (sessionData) {
+          const { currentVideoUrl: savedUrl, currentTime, timestamp } = JSON.parse(sessionData);
+          
+          // Only recover if session is recent (within 10 minutes)
+          const sessionAge = Date.now() - timestamp;
+          if (savedUrl && sessionAge < 10 * 60 * 1000) {
+            console.log('Recovering video session:', savedUrl, 'at time:', currentTime);
+            setCurrentVideoUrl(savedUrl);
+            
+            // Always show recovery notification
+            toast({
+              title: "🎬 Session Recovered",
+              description: currentTime > 0 
+                ? `Resumed video from ${Math.floor(currentTime / 60)}:${String(Math.floor(currentTime % 60)).padStart(2, '0')}`
+                : "Your video session has been restored",
+              duration: 4000,
+            });
+            
+            // Restore video position after a short delay
+            setTimeout(() => {
+              const video = document.querySelector('video') as HTMLVideoElement;
+              if (video && currentTime > 0) {
+                video.currentTime = currentTime;
+                console.log(`Video position restored to ${currentTime} seconds`);
+              }
+            }, 2000);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to recover session:', error);
+      }
+    };
+    
+    // Recover session after connection is established
+    setTimeout(recoverSession, 1000);
+  }, [roomCode, toast]);
 
   // Listen for video URL changes from remote user
   useEffect(() => {
@@ -332,6 +372,52 @@ export default function Room({ roomCode }: RoomPageProps) {
       }
     };
   }, [toast, currentVideoUrl]);
+
+  // Enhanced session persistence - save video position to prevent data loss on refresh
+  useEffect(() => {
+    const saveVideoPosition = () => {
+      try {
+        const video = document.querySelector('video') as HTMLVideoElement;
+        const sessionData = {
+          roomCode,
+          currentVideoUrl,
+          currentTime: video?.currentTime || 0,
+          isPlaying: video ? !video.paused : false,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(`cinesync_session_${roomCode}`, JSON.stringify(sessionData));
+      } catch (error) {
+        console.error('Failed to save session:', error);
+      }
+    };
+
+    if (currentVideoUrl) {
+      // Save every 3 seconds for better recovery
+      const interval = setInterval(saveVideoPosition, 3000);
+      
+      // Also save on page visibility change
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+          saveVideoPosition();
+          console.log('Session saved before page became hidden');
+        }
+      };
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Show initial save confirmation
+      setTimeout(() => {
+        console.log('Session protection active - your video position is being saved automatically');
+      }, 1000);
+      
+      return () => {
+        clearInterval(interval);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        saveVideoPosition(); // Final save on cleanup
+        console.log('Session saved before component cleanup');
+      };
+    }
+  }, [roomCode, currentVideoUrl]);
 
   if (!isConnected) {
     return (

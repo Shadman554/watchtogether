@@ -175,14 +175,16 @@ export function useWebSocket(roomCode: string, userId: string, username: string,
       // Only attempt to reconnect if the page is still active and not being refreshed
       if (document.visibilityState === 'visible' && !document.hidden) {
         setTimeout(() => {
-          if (wsRef.current?.readyState === WebSocket.CLOSED) {
-            try {
+          try {
+            if (wsRef.current?.readyState === WebSocket.CLOSED) {
+              console.log("Attempting WebSocket reconnection...");
               connect();
-            } catch (error) {
-              console.error("Reconnection failed:", error);
             }
+          } catch (error) {
+            console.error("Reconnection failed:", error);
+            // Don't let reconnection failures cause page refresh
           }
-        }, 3000);
+        }, 2000); // Reduced from 3s to 2s for faster reconnection
       }
     };
 

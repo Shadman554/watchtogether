@@ -52,16 +52,27 @@ export function useYouTubePlayer(videoId: string, options: YouTubePlayerOptions 
               }
               
               intervalRef.current = window.setInterval(() => {
-                if (event.target && typeof event.target.getCurrentTime === 'function') {
-                  const currentTime = event.target.getCurrentTime();
-                  const duration = event.target.getDuration();
+                try {
+                  // Only update if page is visible to prevent background resource usage
+                  if (document.visibilityState !== 'visible') return;
                   
-                  options.onTimeUpdate?.(currentTime);
-                  if (duration !== options.onDurationChange) {
-                    options.onDurationChange?.(duration);
+                  if (event.target && typeof event.target.getCurrentTime === 'function') {
+                    const currentTime = event.target.getCurrentTime();
+                    const duration = event.target.getDuration();
+                    
+                    options.onTimeUpdate?.(currentTime);
+                    if (duration !== options.onDurationChange) {
+                      options.onDurationChange?.(duration);
+                    }
+                  }
+                } catch (error) {
+                  console.error('YouTube interval error (clearing to prevent crashes):', error);
+                  if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = undefined;
                   }
                 }
-              }, 500);
+              }, 1000); // Reduced from 500ms to 1000ms to prevent CPU overload
             },
             onStateChange: (event: any) => {
               if (event.data === window.YT.PlayerState.PLAYING) {

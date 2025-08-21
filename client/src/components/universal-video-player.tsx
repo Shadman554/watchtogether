@@ -239,48 +239,58 @@ export default function UniversalVideoPlayer({ videoUrl, onSync, onPlaybackContr
     };
   }, [videoUrl, videoType, syncMode, onSync, onPlaybackControl, syncStatus.remoteTime]);
 
-  // Enhanced heartbeat sync system and iframe video detection
+  // Combined sync system - prevents overlapping intervals that cause memory leaks
   useEffect(() => {
     if (!videoUrl || !syncMode) return;
-    
-    if (effectiveVideoType === 'iframe' || effectiveVideoType === 'youtube') {
-      // For iframe videos, manually update time when playing
-      const interval = setInterval(() => {
-        if (isPlaying) {
-          setCurrentTime(prev => prev + 1);
-          // Set a default duration for iframe videos if not available
-          if (duration === 0) {
-            setDuration(7200); // 2 hours default
-          }
-        }
-      }, 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [effectiveVideoType, isPlaying, videoUrl, syncMode, duration]);
 
-  // Enhanced heartbeat sync system - sends sync updates every 1.5 seconds
-  useEffect(() => {
-    if (!syncMode) return;
-
+    // Clear any existing interval to prevent memory leaks
     if (syncIntervalRef.current) {
       clearInterval(syncIntervalRef.current);
+      syncIntervalRef.current = undefined;
     }
 
+    // Single interval for all video types - reduced frequency to prevent browser overload
     syncIntervalRef.current = window.setInterval(() => {
-      const video = videoRef.current;
-      if (video) {
-        // Send sync for both playing and paused states
-        onSync(video.currentTime, !video.paused, videoUrl);
+      try {
+        // Only run if page is visible to prevent background resource usage
+        if (document.visibilityState !== 'visible') return;
+
+        if (effectiveVideoType === 'iframe' || effectiveVideoType === 'youtube') {
+          // For iframe videos, manually update time when playing
+          if (isPlaying) {
+            setCurrentTime(prev => prev + 1);
+            // Set a default duration for iframe videos if not available
+            if (duration === 0) {
+              setDuration(7200); // 2 hours default
+            }
+          }
+          // Send sync for iframe videos using estimated time
+          onSync(currentTime, isPlaying, videoUrl);
+        } else {
+          // For direct videos, use actual video element
+          const video = videoRef.current;
+          if (video && video.readyState >= 2) {
+            // Send sync for both playing and paused states
+            onSync(video.currentTime, !video.paused, videoUrl);
+          }
+        }
+      } catch (error) {
+        console.error('Sync interval error (clearing to prevent crashes):', error);
+        // Clear the problematic interval immediately
+        if (syncIntervalRef.current) {
+          clearInterval(syncIntervalRef.current);
+          syncIntervalRef.current = undefined;
+        }
       }
-    }, 1500);
+    }, 2500); // Increased from 1.5s to 2.5s to reduce CPU usage
 
     return () => {
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = undefined;
       }
     };
-  }, [syncMode, videoType, videoUrl, onSync]);
+  }, [syncMode, videoType, videoUrl, onSync, effectiveVideoType, isPlaying, currentTime, duration]);
 
   // Enhanced sync with remote player - better tolerance and quicker response
   useEffect(() => {
